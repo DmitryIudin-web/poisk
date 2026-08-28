@@ -100,6 +100,11 @@ class QualificationTests(unittest.TestCase):
         self.assertEqual(status, "irrelevant")
         self.assertIn("mileage", reasons)
 
+    def test_mileage_at_limit_remains_relevant_for_teramont(self) -> None:
+        listing = replace(matching_listing(), mileage_km=1_000)
+
+        self.assertEqual(qualify(listing, TERAMONT_PROFILE), ("relevant", ()))
+
     def test_in_transit_is_not_physical_stock(self) -> None:
         listing = replace(matching_listing(), in_stock=Evidence(False, "в пути"))
 
