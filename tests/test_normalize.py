@@ -153,6 +153,19 @@ class NormalizeListingTests(unittest.TestCase):
         self.assertEqual(listing.advertised_price, 6_100_000)
         self.assertIsNone(listing.cash_price)
 
+    def test_profile_metadata_price_without_currency_stays_unknown(self) -> None:
+        listing = normalize_listing(
+            "autobridge",
+            "https://example.test/unknown-currency",
+            "unknown-currency",
+            "Range Rover L460 D350 2026 Autobiography.",
+            {"price": 167_000},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertEqual(listing.advertised_price, 167_000)
+        self.assertIsNone(listing.price_currency)
+
     def test_negative_epts_and_recycling_fee_wording_is_not_misread_as_paid(self) -> None:
         listing = normalize_listing(
             "autoru",
@@ -315,6 +328,48 @@ class NormalizeListingTests(unittest.TestCase):
         )
 
         self.assertIsNone(listing.year)
+
+    def test_modelljahr_is_preferred_to_erstzulassung(self) -> None:
+        listing = normalize_listing(
+            "mobile",
+            "https://example.test/modelljahr",
+            "modelljahr",
+            "Range Rover L460 D350. Erstzulassung 2025. Modelljahr 2026.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertEqual(listing.year, 2026)
+
+    def test_erstzulassung_without_modelljahr_leaves_year_unknown(self) -> None:
+        listing = normalize_listing(
+            "mobile",
+            "https://example.test/erstzulassung",
+            "erstzulassung",
+            "Range Rover L460 D350. Erstzulassung 2025.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertIsNone(listing.year)
+
+    def test_european_price_grouping_keeps_all_digits(self) -> None:
+        cases = (
+            ("Price €167,000", "EUR"),
+            ("Price 167.000 EUR", "EUR"),
+        )
+        for text, expected_currency in cases:
+            with self.subTest(text=text):
+                listing = normalize_listing(
+                    "autobridge",
+                    "https://example.test/european-price",
+                    "european-price",
+                    f"Range Rover L460 D350 2026 Autobiography. {text}",
+                    {},
+                    RANGE_ROVER_PROFILE,
+                )
+                self.assertEqual(listing.advertised_price, 167_000)
+                self.assertEqual(listing.price_currency, expected_currency)
 
     def test_ebony_is_black_but_secondary_ebony_is_not_primary_black_interior(self) -> None:
         ebony = normalize_listing(

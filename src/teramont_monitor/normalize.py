@@ -13,17 +13,18 @@ _VIN = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b", re.IGNORECASE)
 _EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 _PHONE_CANDIDATE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
 _MILEAGE = re.compile(r"(?:пробег|mileage)\D{0,18}([\d\s\u00a0]{1,12})\s*(?:км|km)\b", re.IGNORECASE)
+_PRICE_AMOUNT = r"(?:\d{1,3}(?:[\s\u00a0,.]\d{3})+|\d{3,})"
 _MONEY = re.compile(
-    r"(?:(?P<prefix>€|eur|euro|₾|gel|lari|\$|usd|dollar)\s*(?P<prefix_amount>\d[\d\s\u00a0]{2,14})|(?P<suffix_amount>\d[\d\s\u00a0]{2,14})\s*(?P<suffix>₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar))",
+    rf"(?:(?P<prefix>€|eur|euro|₾|gel|lari|\$|usd|dollar)\s*(?P<prefix_amount>{_PRICE_AMOUNT})|(?P<suffix_amount>{_PRICE_AMOUNT})\s*(?P<suffix>₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar))",
     re.IGNORECASE,
 )
 _CASH_LABEL = r"(?:за наличные|без кредита|полная цена|наличный расч[её]т)"
 _CASH_AFTER = re.compile(
-    rf"{_CASH_LABEL}\D{{0,30}}(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar)",
+    rf"{_CASH_LABEL}\D{{0,30}}({_PRICE_AMOUNT})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar)",
     re.IGNORECASE,
 )
 _CASH_BEFORE = re.compile(
-    rf"(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar)\D{{0,30}}{_CASH_LABEL}",
+    rf"({_PRICE_AMOUNT})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar)\D{{0,30}}{_CASH_LABEL}",
     re.IGNORECASE,
 )
 
@@ -101,7 +102,12 @@ def _parse_number(value: str) -> int | None:
     return int(digits) if digits else None
 
 
-def _extract_price(text: str, metadata: Mapping[str, Any]) -> tuple[int | None, int | None, str | None, str | None]:
+def _extract_price(
+    text: str,
+    metadata: Mapping[str, Any],
+    *,
+    default_metadata_currency: str | None = None,
+) -> tuple[int | None, int | None, str | None, str | None]:
     matches = list(_MONEY.finditer(text))
     advertised = None
     currency = None
@@ -129,14 +135,16 @@ def _extract_price(text: str, metadata: Mapping[str, Any]) -> tuple[int | None, 
         currency = _currency(explicit_cash.group(2))
 
     meta_price = metadata.get("price")
+    metadata_currency = metadata.get("price_currency")
+    parsed_metadata_currency = _currency(str(metadata_currency)) if metadata_currency else default_metadata_currency
     if advertised is None and isinstance(meta_price, (int, float)) and not isinstance(meta_price, bool):
         advertised = int(meta_price)
-        currency = _currency(str(metadata.get("price_currency") or "RUB"))
+        currency = parsed_metadata_currency
         qualifier = "unqualified"
     meta_cash = metadata.get("cash_price")
     if isinstance(meta_cash, (int, float)) and not isinstance(meta_cash, bool):
         cash = int(meta_cash)
-        currency = _currency(str(metadata.get("price_currency") or "RUB"))
+        currency = parsed_metadata_currency
         qualifier = "unconditional"
     return cash, advertised, currency, qualifier
 
@@ -162,10 +170,10 @@ def _extract_model_year(text: str, metadata: Mapping[str, Any]) -> int | None:
     structured = metadata.get("model_year")
     if isinstance(structured, (int, float)) and not isinstance(structured, bool):
         return int(structured)
-    explicit = re.search(r"(?:model year|модельный год|год выпуска|year)\D{0,12}(20\d{2})", text, re.IGNORECASE)
+    explicit = re.search(r"(?:model year|modelljahr|модельный год|год выпуска|year)\D{0,12}(20\d{2})", text, re.IGNORECASE)
     if explicit:
         return int(explicit.group(1))
-    if re.search(r"first registration|первая регистрация", text, re.IGNORECASE):
+    if re.search(r"first registration|erstzulassung|первая регистрация", text, re.IGNORECASE):
         return None
     fallback = re.search(r"\b(20\d{2})\b", text)
     return int(fallback.group(1)) if fallback else None
@@ -236,7 +244,11 @@ def normalize_listing(
     sold = _boolean_evidence(clean_text, _SOLD)
     if sold.value is True:
         in_stock = Evidence(False, sold.source_text)
-    cash_price, advertised_price, currency, qualifier = _extract_price(clean_text, metadata)
+    cash_price, advertised_price, currency, qualifier = _extract_price(
+        clean_text,
+        metadata,
+        default_metadata_currency="RUB" if profile is None else None,
+    )
     vin_match = _VIN.search(clean_text)
     vin = vin_match.group(1).upper() if vin_match else None
     location = _extract_location(clean_text, metadata)
