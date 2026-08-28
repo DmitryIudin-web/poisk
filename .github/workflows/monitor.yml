@@ -45,7 +45,6 @@ jobs:
           else
             git worktree add --detach "$STATE_DIR" HEAD
             git -C "$STATE_DIR" switch --orphan monitor-state
-            git -C "$STATE_DIR" rm -rf .
           fi
           git -C "$STATE_DIR" config user.name "github-actions[bot]"
           git -C "$STATE_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"

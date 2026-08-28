@@ -39,6 +39,11 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertLess(first_push_at, notify_at)
         self.assertLess(notify_at, second_push_at)
 
+    def test_first_state_branch_setup_does_not_remove_already_empty_orphan(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("switch --orphan monitor-state", text)
+        self.assertNotIn('git -C "$STATE_DIR" rm -rf .', text)
+
     def test_failure_diagnostics_are_sanitized_artifact(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("if: failure()", text)
