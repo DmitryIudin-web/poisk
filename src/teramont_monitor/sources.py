@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 from .html import extract_detail, extract_links
 from .models import SourceGap, SourceResult
 from .normalize import normalize_listing
+from .profiles import TargetProfile
 
 
 Fetcher = Callable[[str, float], str]
@@ -33,6 +34,7 @@ class SourceConfig:
     user_agent: str
     empty_markers: tuple[str, ...]
     blocked_markers: tuple[str, ...]
+    market: str | None = None
 
 
 def load_source_configs(path: str | Path) -> list[SourceConfig]:
@@ -55,6 +57,7 @@ def load_source_configs(path: str | Path) -> list[SourceConfig]:
                 user_agent=user_agent,
                 empty_markers=tuple(item.get("empty_markers", ())),
                 blocked_markers=tuple(item.get("blocked_markers", ())),
+                market=str(item["market"]) if item.get("market") else None,
             )
         )
     return configs
@@ -112,6 +115,7 @@ def _page_has_marker(page_html: str, markers: tuple[str, ...]) -> bool:
 
 def scan_source(
     config: SourceConfig,
+    profile: TargetProfile | None = None,
     *,
     fetcher: Fetcher | None = None,
     sleeper: Callable[[float], None] = time.sleep,
@@ -148,7 +152,9 @@ def scan_source(
             detail_text, metadata = extract_detail(detail_html)
             if not detail_text:
                 raise ValueError("detail page has no readable content")
-            listings.append(normalize_listing(config.name, url, listing_id, detail_text, metadata))
+            listings.append(normalize_listing(
+                config.name, url, listing_id, detail_text, metadata, profile, market=config.market
+            ))
         except Exception as error:  # one broken listing must not discard its source
             code, message = _fetch_gap(config, error)
             warnings.append(SourceGap(config.name, f"detail_{code}", f"{listing_id}: {message}"))
@@ -167,11 +173,12 @@ def scan_source(
 
 def scan_all(
     configs: list[SourceConfig],
+    profile: TargetProfile | None = None,
     *,
     fetcher: Fetcher | None = None,
     sleeper: Callable[[float], None] = time.sleep,
 ) -> dict[str, SourceResult]:
     return {
-        config.name: scan_source(config, fetcher=fetcher, sleeper=sleeper)
+        config.name: scan_source(config, profile, fetcher=fetcher, sleeper=sleeper)
         for config in configs
     }

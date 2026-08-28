@@ -9,6 +9,7 @@ from teramont_monitor.sources import load_source_configs
 
 FIXTURES = Path(__file__).parent / "fixtures"
 CONFIG = Path(__file__).parents[1] / "config" / "sources.json"
+RANGE_ROVER_CONFIG = Path(__file__).parents[1] / "config" / "range-rover-sources.json"
 
 
 class HtmlExtractionTests(unittest.TestCase):
@@ -30,6 +31,40 @@ class HtmlExtractionTests(unittest.TestCase):
         for name, wanted in expected.items():
             with self.subTest(source=name):
                 self.assertEqual(extract_links(self.fixture(name), self.configs[name]), [wanted])
+
+    def test_range_rover_fixture_has_one_stable_listing_per_approved_source(self) -> None:
+        configs = {config.name: config for config in load_source_configs(RANGE_ROVER_CONFIG)}
+        expected = {
+            "autoru": ("1131273493-a5e33347", "https://auto.ru/cars/new/group/land_rover/range_rover/24068818/24072830/1131273493-a5e33347"),
+            "drom": ("460325385", "https://auto.drom.ru/moscow/land_rover/range_rover/460325385.html"),
+            "avito": ("7957046084", "https://www.avito.ru/moskva/avtomobili/land_rover_range_rover_d350_autobiography_2026_7957046084"),
+            "mashina": ("6a8ef6d8ed395bdd959aa66e", "https://m.mashina.kg/details/land-rover-range-rover-6a8ef6d8ed395bdd959aa66e"),
+            "myauto": ("41725891", "https://www.myauto.ge/en/pr/41725891/land-rover-range-rover-d350-autobiography-2026"),
+            "landrover_georgia": ("rr-l460-d350-2026", "https://www.landrover-georgia.com/shop/en/approved/range-rover/range-rover/rr-l460-d350-2026"),
+            "autobridge": ("1a2b3c4d", "https://autobridge.ge/en/listings/land-rover-range-rover-2026-1a2b3c4d"),
+            "mobile_de": ("398765432", "https://suchen.mobile.de/fahrzeuge/details.html?id=398765432"),
+            "autoscout24": ("12345678-1234-1234-1234-123456789abc", "https://www.autoscout24.com/offers/land-rover-range-rover-d350-autobiography-12345678-1234-1234-1234-123456789abc"),
+        }
+        page = self.fixture("range_rover_sources")
+        for name, wanted in expected.items():
+            with self.subTest(source=name):
+                self.assertEqual(extract_links(page, configs[name]), [wanted])
+
+    def test_query_identifier_is_preserved_only_when_the_contract_requires_it(self) -> None:
+        configs = {config.name: config for config in load_source_configs(RANGE_ROVER_CONFIG)}
+        page = (
+            '<a href="https://suchen.mobile.de/fahrzeuge/details.html?id=398765432&tracking=ad">mobile</a>'
+            '<a href="https://auto.drom.ru/moscow/land_rover/range_rover/460325385.html?tracking=ad">drom</a>'
+        )
+
+        self.assertEqual(
+            extract_links(page, configs["mobile_de"]),
+            [("398765432", "https://suchen.mobile.de/fahrzeuge/details.html?id=398765432")],
+        )
+        self.assertEqual(
+            extract_links(page, configs["drom"]),
+            [("460325385", "https://auto.drom.ru/moscow/land_rover/range_rover/460325385.html")],
+        )
 
     def test_rejects_disallowed_host_and_catalog_links(self) -> None:
         links = extract_links(self.fixture("autoru"), self.configs["autoru"])

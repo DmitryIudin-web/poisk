@@ -90,7 +90,8 @@ def extract_links(page_html: str, config: LinkConfig) -> list[tuple[str, str]]:
     for raw in raw_candidates:
         decoded = html_module.unescape(raw).replace(r"\/", "/").replace(r"\u002F", "/")
         try:
-            absolute = canonical_url(urljoin(config.search_url, decoded))
+            candidate = urljoin(config.search_url, decoded)
+            absolute = canonical_url(candidate)
         except ValueError:
             continue
         if not _host_allowed(urlsplit(absolute).netloc, config.allowed_hosts):
@@ -99,6 +100,10 @@ def extract_links(page_html: str, config: LinkConfig) -> list[tuple[str, str]]:
         if any(term.casefold() not in lowered for term in config.url_terms):
             continue
         match = pattern.search(absolute)
+        if not match and (query := urlsplit(candidate).query):
+            match = pattern.search(f"{absolute}?{query}")
+            if match:
+                absolute = match.group(0)
         if not match or absolute in seen:
             continue
         listing_id = match.groupdict().get("id") or match.group(match.lastindex or 0)
