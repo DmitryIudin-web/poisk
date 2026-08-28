@@ -19,6 +19,12 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", text)
         self.assertIn("python-version: '3.12'", text)
 
+    def test_job_environment_uses_context_available_before_runner_start(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertNotIn("${{ runner.temp }}", text)
+        self.assertIn("/tmp/teramont-monitor-${{ github.run_id }}", text)
+        self.assertIn("/tmp/teramont-summary-${{ github.run_id }}.json", text)
+
     def test_workflow_uses_exact_telegram_secrets(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("secrets.TELEGRAM_BOT_TOKEN", text)
@@ -60,7 +66,7 @@ class WorkflowContractTests(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("if: failure()", text)
         self.assertIn("actions/upload-artifact@v4", text)
-        self.assertIn("monitor-summary.json", text)
+        self.assertIn("teramont-summary-${{ github.run_id }}.json", text)
         self.assertNotIn("raw-html", text)
 
     def test_readme_documents_exact_setup_and_activation_boundary(self) -> None:
