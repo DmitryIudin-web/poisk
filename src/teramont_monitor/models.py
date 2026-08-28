@@ -40,6 +40,11 @@ class Listing:
     location: str | None = None
     epts_status: str | None = None
     commercial_recycling_fee_status: str | None = None
+    target_id: str = "teramont-pro-2026"
+    target_name: str = "Volkswagen Teramont Pro 2026"
+    powertrain_match: Evidence = field(default_factory=lambda: Evidence(None, None))
+    rear_seat_entertainment: Evidence = field(default_factory=lambda: Evidence(None, None))
+    steering_left: Evidence = field(default_factory=lambda: Evidence(None, None))
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -47,6 +52,8 @@ class Listing:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Listing":
         values = dict(data)
+        values["target_id"] = values.get("target_id") or "teramont-pro-2026"
+        values["target_name"] = values.get("target_name") or "Volkswagen Teramont Pro 2026"
         for name in (
             "model_match",
             "exterior_black",
@@ -56,6 +63,9 @@ class Listing:
             "is_new",
             "in_stock",
             "sold",
+            "powertrain_match",
+            "rear_seat_entertainment",
+            "steering_left",
         ):
             values[name] = Evidence.from_dict(values.get(name))
         return cls(**values)

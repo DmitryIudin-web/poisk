@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from .models import Evidence, Listing
+from .profiles import TargetProfile, match_evidence
 
 
 _SPACE = re.compile(r"\s+")
@@ -13,23 +14,25 @@ _EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 _PHONE_CANDIDATE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
 _MILEAGE = re.compile(r"(?:пробег|mileage)\D{0,18}([\d\s\u00a0]{1,12})\s*(?:км|km)\b", re.IGNORECASE)
 _MONEY = re.compile(
-    r"(\d[\d\s\u00a0]{2,14})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt)",
+    r"(?:(?P<prefix>€|eur|euro|₾|gel|lari|\$|usd|dollar)\s*(?P<prefix_amount>\d[\d\s\u00a0]{2,14})|(?P<suffix_amount>\d[\d\s\u00a0]{2,14})\s*(?P<suffix>₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar))",
     re.IGNORECASE,
 )
 _CASH_LABEL = r"(?:за наличные|без кредита|полная цена|наличный расч[её]т)"
 _CASH_AFTER = re.compile(
-    rf"{_CASH_LABEL}\D{{0,30}}(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt)",
+    rf"{_CASH_LABEL}\D{{0,30}}(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar)",
     re.IGNORECASE,
 )
 _CASH_BEFORE = re.compile(
-    rf"(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt)\D{{0,30}}{_CASH_LABEL}",
+    rf"(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar)\D{{0,30}}{_CASH_LABEL}",
     re.IGNORECASE,
 )
 
-_BLACK = ("черн", "black", "schwarz")
+_BLACK = ("черн", "black", "schwarz", "ebony")
 _NEGATIVE_STOCK = ("в пути", "под заказ", "в поставке", "на подходе", "ожидается", "in transit")
 _POSITIVE_STOCK = ("физически в наличии", "в наличии", "в салоне", "на площадке", "in stock")
 _SOLD = ("продан", "продано", "снят с продажи", "объявление снято", "sold")
+_LEGACY_TARGET_ID = "teramont-pro-2026"
+_LEGACY_TARGET_NAME = "Volkswagen Teramont Pro 2026"
 
 
 def _clean(value: Any) -> str:
@@ -62,7 +65,24 @@ def _boolean_evidence(text: str, positive: tuple[str, ...], negative: tuple[str,
     return Evidence(None, None)
 
 
-def _color_evidence(text: str, labels: tuple[str, ...]) -> Evidence:
+def _legacy_teramont_evidence(text: str) -> tuple[Evidence, Evidence, Evidence]:
+    lowered = text.casefold()
+    model_positive = bool(re.search(r"(?:volkswagen\s+)?teramont\s*pro|терамонт\s*про|途昂\s*pro", text, re.IGNORECASE))
+    model_seen = "teramont" in lowered or "терамонт" in lowered
+    model_match = Evidence(True, "Teramont Pro") if model_positive else Evidence(False, "Teramont without Pro") if model_seen else Evidence(None, None)
+    top_trim = _boolean_evidence(
+        text,
+        (" peak", "summit", "максимальная комплектация", "топовая комплектация", "top trim", "maximum trim"),
+    )
+    dcc = _boolean_evidence(
+        text,
+        ("dcc", "adaptive chassis control", "адаптивная подвеска", "адаптивное шасси"),
+        ("без dcc", "no dcc"),
+    )
+    return model_match, top_trim, dcc
+
+
+def _color_evidence(text: str, labels: tuple[str, ...], *, primary_only: bool = False) -> Evidence:
     lowered = text.casefold()
     if "black on black" in lowered or "черный на черном" in lowered or "чёрный на чёрном" in lowered:
         return Evidence(True, "black on black")
@@ -71,7 +91,8 @@ def _color_evidence(text: str, labels: tuple[str, ...]) -> Evidence:
         if not match:
             continue
         value = _excerpt(match.group(1), 40)
-        return Evidence(any(marker in value.casefold() for marker in _BLACK), value)
+        color = value.split("/", 1)[0].strip() if primary_only else value
+        return Evidence(any(marker in color.casefold() for marker in _BLACK), value)
     return Evidence(None, None)
 
 
@@ -88,8 +109,10 @@ def _extract_price(text: str, metadata: Mapping[str, Any]) -> tuple[int | None, 
     qualifier = None
     if matches:
         first = matches[0]
-        advertised = _parse_number(first.group(1))
-        currency = _currency(first.group(2))
+        amount = first.group("prefix_amount") or first.group("suffix_amount")
+        token = first.group("prefix") or first.group("suffix")
+        advertised = _parse_number(amount)
+        currency = _currency(token)
         sentence_start = max(text.rfind(marker, 0, first.start()) for marker in ".;|") + 1
         sentence_ends = [position for marker in ".;|" if (position := text.find(marker, first.end())) >= 0]
         sentence_end = min(sentence_ends) if sentence_ends else len(text)
@@ -118,13 +141,34 @@ def _extract_price(text: str, metadata: Mapping[str, Any]) -> tuple[int | None, 
     return cash, advertised, currency, qualifier
 
 
-def _currency(value: str) -> str:
+def _currency(value: str) -> str | None:
     lowered = value.casefold()
+    if "eur" in lowered or "€" in value or "euro" in lowered:
+        return "EUR"
+    if "gel" in lowered or "₾" in value or "lari" in lowered:
+        return "GEL"
+    if "usd" in lowered or "$" in value or "dollar" in lowered:
+        return "USD"
     if "сом" in lowered or "kgs" in lowered:
         return "KGS"
     if "тенге" in lowered or "kzt" in lowered or "₸" in value:
         return "KZT"
-    return "RUB"
+    if "руб" in lowered or "₽" in value or "rub" in lowered:
+        return "RUB"
+    return None
+
+
+def _extract_model_year(text: str, metadata: Mapping[str, Any]) -> int | None:
+    structured = metadata.get("model_year")
+    if isinstance(structured, (int, float)) and not isinstance(structured, bool):
+        return int(structured)
+    explicit = re.search(r"(?:model year|модельный год|год выпуска|year)\D{0,12}(20\d{2})", text, re.IGNORECASE)
+    if explicit:
+        return int(explicit.group(1))
+    if re.search(r"first registration|первая регистрация", text, re.IGNORECASE):
+        return None
+    fallback = re.search(r"\b(20\d{2})\b", text)
+    return int(fallback.group(1)) if fallback else None
 
 
 def _extract_location(text: str, metadata: Mapping[str, Any]) -> str | None:
@@ -160,32 +204,38 @@ def normalize_listing(
     listing_id: str | None,
     text: str,
     metadata: Mapping[str, Any] | None,
+    profile: TargetProfile | None = None,
+    market: str | None = None,
 ) -> Listing:
     metadata = metadata or {}
     clean_text = _clean(text)
-    lowered = clean_text.casefold()
-    model_positive = bool(re.search(r"(?:volkswagen\s+)?teramont\s*pro|терамонт\s*про|途昂\s*pro", clean_text, re.IGNORECASE))
-    model_seen = "teramont" in lowered or "терамонт" in lowered
-    model_match = Evidence(True, "Teramont Pro") if model_positive else Evidence(False, "Teramont without Pro") if model_seen else Evidence(None, None)
-
-    year_match = re.search(r"\b(20\d{2})\b", clean_text)
-    year = int(year_match.group(1)) if year_match else None
+    if profile is None:
+        model_match, top_trim, dcc = _legacy_teramont_evidence(clean_text)
+        target_id = _LEGACY_TARGET_ID
+        target_name = _LEGACY_TARGET_NAME
+    else:
+        model_match = match_evidence(clean_text, profile.evidence_rules["model_match"])
+        top_trim = match_evidence(clean_text, profile.evidence_rules["top_trim"])
+        dcc = match_evidence(clean_text, profile.evidence_rules["dcc"]) if "dcc" in profile.evidence_rules else Evidence(None, None)
+        target_id = profile.target_id
+        target_name = profile.display_name
+    year = _extract_model_year(clean_text, metadata)
     exterior = _color_evidence(clean_text, (r"цвет\s+кузова", r"кузов", r"exterior(?:\s+color)?"))
-    interior = _color_evidence(clean_text, (r"цвет\s+салона", r"салон", r"интерьер", r"interior(?:\s+color)?"))
-    top_trim = _boolean_evidence(
+    interior = _color_evidence(
         clean_text,
-        (" peak", "summit", "максимальная комплектация", "топовая комплектация", "top trim", "maximum trim"),
+        (r"цвет\s+салона", r"салон", r"интерьер", r"interior(?:\s+color)?"),
+        primary_only=True,
     )
-    dcc = _boolean_evidence(
-        clean_text,
-        ("dcc", "adaptive chassis control", "адаптивная подвеска", "адаптивное шасси"),
-        ("без dcc", "no dcc"),
-    )
+    powertrain_match = match_evidence(clean_text, profile.evidence_rules["powertrain_match"]) if profile is not None and "powertrain_match" in profile.evidence_rules else Evidence(None, None)
+    rear_seat_entertainment = match_evidence(clean_text, profile.evidence_rules["rear_seat_entertainment"]) if profile is not None and "rear_seat_entertainment" in profile.evidence_rules else Evidence(None, None)
+    steering_left = match_evidence(clean_text, profile.evidence_rules["steering_left"]) if profile is not None and "steering_left" in profile.evidence_rules else Evidence(None, None)
     is_new = _boolean_evidence(clean_text, ("новый автомобиль", "новый", "без пробега", "brand new"), ("с пробегом", "used"))
     mileage_match = _MILEAGE.search(clean_text)
     mileage = _parse_number(mileage_match.group(1)) if mileage_match else 0 if is_new.value is True else None
     in_stock = _boolean_evidence(clean_text, _POSITIVE_STOCK, _NEGATIVE_STOCK)
     sold = _boolean_evidence(clean_text, _SOLD)
+    if sold.value is True:
+        in_stock = Evidence(False, sold.source_text)
     cash_price, advertised_price, currency, qualifier = _extract_price(clean_text, metadata)
     vin_match = _VIN.search(clean_text)
     vin = vin_match.group(1).upper() if vin_match else None
@@ -203,13 +253,7 @@ def normalize_listing(
     elif re.search(r"коммерческ\w*\s+утильсбор.{0,30}(?:уплачен|списан|оплачен)", clean_text, re.IGNORECASE):
         recycling = "paid"
 
-    fallback_title = "Volkswagen Teramont Pro" if model_positive else "Volkswagen Teramont" if model_seen else "Объявление автомобиля"
-    if year is not None:
-        fallback_title += f" {year}"
-    trim_match = re.search(r"\b(peak|summit)\b", clean_text, re.IGNORECASE)
-    if trim_match:
-        fallback_title += f" {trim_match.group(1).title()}"
-    title = _safe_title(str(metadata.get("title") or "")) or fallback_title
+    title = _safe_title(str(metadata.get("title") or "")) or target_name
     return Listing(
         source=source,
         url=url,
@@ -230,8 +274,13 @@ def normalize_listing(
         price_currency=currency,
         price_qualifier=qualifier,
         vin=vin,
-        region=_region(source, location, clean_text),
+        region=market if market in {"russia", "kyrgyzstan", "georgia", "europe"} else _region(source, location, clean_text),
         location=location,
         epts_status=epts,
         commercial_recycling_fee_status=recycling,
+        target_id=target_id,
+        target_name=target_name,
+        powertrain_match=powertrain_match,
+        rear_seat_entertainment=rear_seat_entertainment,
+        steering_left=steering_left,
     )

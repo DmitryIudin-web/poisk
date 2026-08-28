@@ -2,10 +2,16 @@ from __future__ import annotations
 
 import unittest
 from dataclasses import replace
+from pathlib import Path
 
 from teramont_monitor.models import Evidence
 from teramont_monitor.normalize import normalize_listing
+from teramont_monitor.profiles import load_target_profile
 from teramont_monitor.qualify import qualify
+
+
+ROOT = Path(__file__).resolve().parents[1]
+TERAMONT_PROFILE = load_target_profile(ROOT / "config/targets/teramont-pro-2026.json")
 
 
 def matching_listing():
@@ -15,6 +21,7 @@ def matching_listing():
         "1",
         "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, пробег 23 км, в наличии, Москва",
         {},
+        TERAMONT_PROFILE,
     )
 
 
