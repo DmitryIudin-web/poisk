@@ -51,22 +51,31 @@ jobs:
           touch "$STATE_DIR/history.jsonl"
 
       - name: Collect marketplace observations
+        id: collect
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
+          set -o pipefail
           python -m teramont_monitor collect \
             --config config/sources.json \
             --state-dir "$STATE_DIR" | tee "$SUMMARY_PATH"
+          collect_status=${PIPESTATUS[0]}
+          set -e
+          echo "collect_status=$collect_status" >> "$GITHUB_OUTPUT"
 
       - name: Persist observations and pending events
         shell: bash
         run: |
           set -euo pipefail
-          git -C "$STATE_DIR" add -- state.json history.jsonl pending-events.json
+          git -C "$STATE_DIR" add -A -- .
           if ! git -C "$STATE_DIR" diff --cached --quiet; then
             git -C "$STATE_DIR" commit -m "state: collect $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
             git -C "$STATE_DIR" push origin HEAD:monitor-state
           fi
+
+      - name: Fail after persisting source gaps
+        if: steps.collect.outputs.collect_status != '0'
+        run: exit "${{ steps.collect.outputs.collect_status }}"
 
       - name: Deliver significant Telegram events
         env:

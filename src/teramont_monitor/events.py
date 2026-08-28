@@ -4,7 +4,7 @@ import hashlib
 import json
 from typing import Any
 
-from .identity import listing_key
+from .identity import listing_key, vehicle_key
 from .models import Event, Listing, ListingState, MonitorState, SourceResult
 from .qualify import qualify
 
@@ -62,7 +62,17 @@ def apply_scan(
     events: list[Event] = []
     history: list[dict[str, Any]] = []
     successful_sources = {name for name, result in source_results.items() if result.ok}
+    complete_sources = {
+        name for name, result in source_results.items() if result.ok and result.complete
+    }
     seen_by_source: dict[str, set[str]] = {name: set() for name in successful_sources}
+    active_vehicle_keys = {
+        vehicle_key(listing_state.listing)
+        for listing_state in next_state.listings.values()
+        if listing_state.status == "relevant"
+        and not listing_state.removed
+        and listing_state.listing.sold.value is not True
+    }
 
     def emit(event: Event) -> None:
         if event.id not in known:
@@ -106,6 +116,7 @@ def apply_scan(
                     "observed_at": observed_at,
                     "source": source,
                     "listing_key": key,
+                    "vehicle_key": vehicle_key(current),
                     "status": status,
                     "missing": list(missing),
                     "cash_price": current.cash_price,
@@ -120,20 +131,46 @@ def apply_scan(
             if previous_state is None:
                 next_state.listings[key] = ListingState(current, status, missing, 0, observed_at, False)
                 if status == "relevant" and current.sold.value is not True:
-                    emit(_make_event("new_relevant", key, observed_at, current, {"status": "relevant"}))
+                    current_vehicle_key = vehicle_key(current)
+                    if current_vehicle_key not in active_vehicle_keys:
+                        emit(_make_event("new_relevant", key, observed_at, current, {"status": "relevant"}))
+                    active_vehicle_keys.add(current_vehicle_key)
                 continue
 
             previous = previous_state.listing
             was_removed = previous_state.removed
             next_state.listings[key] = ListingState(current, status, missing, 0, observed_at, False)
 
-            if current.sold.value is True and not was_removed:
+            if current.sold.value is True:
                 next_state.listings[key].removed = True
-                emit(_make_event("removed_or_sold", key, observed_at, current, {"reason": "explicit_sold"}))
+                if previous_state.status == "relevant" and not was_removed:
+                    emit(
+                        _make_event(
+                            "removed_or_sold",
+                            key,
+                            observed_at,
+                            current,
+                            {
+                                "reason": "explicit_sold",
+                                "transition_anchor": previous_state.last_seen_at,
+                            },
+                        )
+                    )
                 continue
 
             if was_removed and status == "relevant":
-                emit(_make_event("became_available", key, observed_at, current, {"reason": "reappeared"}))
+                emit(
+                    _make_event(
+                        "became_available",
+                        key,
+                        observed_at,
+                        current,
+                        {
+                            "reason": "reappeared",
+                            "transition_anchor": previous_state.last_seen_at,
+                        },
+                    )
+                )
                 continue
 
             if previous_state.status == "candidate" and status == "relevant":
@@ -144,13 +181,46 @@ def apply_scan(
                         key,
                         observed_at,
                         current,
-                        {"confirmed": confirmed},
+                        {
+                            "confirmed": confirmed,
+                            "transition_anchor": previous_state.last_seen_at,
+                        },
                     )
                 )
                 continue
 
             if previous.in_stock.value is False and current.in_stock.value is True and status == "relevant":
-                emit(_make_event("became_available", key, observed_at, current, {"reason": "stock_confirmed"}))
+                emit(
+                    _make_event(
+                        "became_available",
+                        key,
+                        observed_at,
+                        current,
+                        {
+                            "reason": "stock_confirmed",
+                            "transition_anchor": previous_state.last_seen_at,
+                        },
+                    )
+                )
+                continue
+
+            if previous_state.status == "irrelevant" and status == "relevant":
+                current_vehicle_key = vehicle_key(current)
+                if current_vehicle_key not in active_vehicle_keys:
+                    emit(
+                        _make_event(
+                            "new_relevant",
+                            key,
+                            observed_at,
+                            current,
+                            {
+                                "status": "relevant",
+                                "transition_anchor": previous_state.last_seen_at,
+                            },
+                        )
+                    )
+                active_vehicle_keys.add(current_vehicle_key)
+                continue
 
             if (
                 previous.cash_price is not None
@@ -166,26 +236,34 @@ def apply_scan(
                             key,
                             observed_at,
                             current,
-                            {"old_price": previous.cash_price, "new_price": current.cash_price, "drop": drop},
+                            {
+                                "old_price": previous.cash_price,
+                                "new_price": current.cash_price,
+                                "drop": drop,
+                                "transition_anchor": previous_state.last_seen_at,
+                            },
                             {"cash_price": previous.cash_price},
                         )
                     )
 
             confirmed = _new_commercial_confirmations(previous, current)
-            if confirmed and status == "relevant":
+            if confirmed and status in {"candidate", "relevant"}:
                 emit(
                     _make_event(
                         "critical_confirmation",
                         key,
                         observed_at,
                         current,
-                        {"confirmed": confirmed},
+                        {
+                            "confirmed": confirmed,
+                            "transition_anchor": previous_state.last_seen_at,
+                        },
                     )
                 )
 
     for key, listing_state in list(next_state.listings.items()):
         source = listing_state.listing.source
-        if source not in successful_sources or key in seen_by_source[source] or listing_state.removed:
+        if source not in complete_sources or key in seen_by_source[source] or listing_state.removed:
             continue
         listing_state.misses += 1
         history.append(
@@ -205,7 +283,10 @@ def apply_scan(
                     key,
                     observed_at,
                     listing_state.listing,
-                    {"reason": "absent_twice"},
+                    {
+                        "reason": "absent_twice",
+                        "transition_anchor": listing_state.last_seen_at,
+                    },
                 )
             )
 

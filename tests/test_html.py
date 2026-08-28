@@ -58,6 +58,21 @@ class HtmlExtractionTests(unittest.TestCase):
         self.assertEqual(metadata["price"], 5_999_000)
         self.assertEqual(metadata["price_currency"], "RUB")
 
+    def test_primary_listing_content_excludes_related_cards_and_footer(self) -> None:
+        html = """
+        <html><body>
+        <main><h1>Volkswagen Teramont Pro 2026</h1><p>Цвет кузова: белый. Без DCC.</p></main>
+        <aside>Похожий автомобиль: Peak, black on black, DCC, в наличии</aside>
+        <footer>Реклама: Summit, чёрный салон, физически в наличии</footer>
+        </body></html>
+        """
+
+        text, _ = extract_detail(html)
+
+        self.assertIn("Цвет кузова: белый", text)
+        self.assertNotIn("Похожий автомобиль", text)
+        self.assertNotIn("Реклама", text)
+
 
 if __name__ == "__main__":
     unittest.main()

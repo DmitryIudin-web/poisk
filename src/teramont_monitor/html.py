@@ -26,19 +26,25 @@ class _PageParser(HTMLParser):
         self.links: list[str] = []
         self.visible: list[str] = []
         self.meta: list[str] = []
+        self.meta_title: str | None = None
         self.jsonld: list[str] = []
+        self.primary_visible: list[str] = []
+        self._primary_depth = 0
         self._ignored_depth = 0
         self._jsonld_depth = 0
         self._jsonld_buffer: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
+        if tag in {"main", "article"}:
+            self._primary_depth += 1
         if tag == "a" and attributes.get("href"):
             self.links.append(attributes["href"] or "")
         if tag == "meta" and attributes.get("content"):
-            if (attributes.get("name") or attributes.get("property") or "").casefold() in {
-                "description", "og:description", "og:title"
-            }:
+            meta_name = (attributes.get("name") or attributes.get("property") or "").casefold()
+            if meta_name == "og:title":
+                self.meta_title = attributes["content"] or ""
+            elif meta_name in {"description", "og:description"}:
                 self.meta.append(attributes["content"] or "")
         if tag == "script" and (attributes.get("type") or "").casefold() == "application/ld+json":
             self._jsonld_depth = 1
@@ -55,12 +61,16 @@ class _PageParser(HTMLParser):
             return
         if tag in {"script", "style", "noscript", "template"} and self._ignored_depth:
             self._ignored_depth -= 1
+        if tag in {"main", "article"} and self._primary_depth:
+            self._primary_depth -= 1
 
     def handle_data(self, data: str) -> None:
         if self._jsonld_depth:
             self._jsonld_buffer.append(data)
         elif not self._ignored_depth and data.strip():
             self.visible.append(data.strip())
+            if self._primary_depth:
+                self.primary_visible.append(data.strip())
 
 
 def _host_allowed(host: str, allowed: tuple[str, ...]) -> bool:
@@ -128,12 +138,18 @@ def extract_detail(page_html: str) -> tuple[str, dict[str, Any]]:
     parser = _PageParser()
     parser.feed(page_html)
     parser.close()
-    strings = [*parser.meta, *parser.visible]
     metadata: dict[str, Any] = {}
+    if parser.meta_title:
+        metadata["title"] = parser.meta_title
+    structured_strings: list[str] = []
     for block in parser.jsonld:
         try:
-            _walk_json(json.loads(block), strings, metadata)
+            _walk_json(json.loads(block), structured_strings, metadata)
         except (TypeError, ValueError, json.JSONDecodeError):
             continue
+    visible = parser.primary_visible or parser.visible
+    strings = [*parser.meta, *visible]
+    if not parser.primary_visible:
+        strings.extend(structured_strings)
     text = re.sub(r"\s+", " ", " | ".join(strings)).strip()
     return text, metadata

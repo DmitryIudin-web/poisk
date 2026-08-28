@@ -51,6 +51,33 @@ class NormalizeListingTests(unittest.TestCase):
         self.assertEqual(listing.advertised_price, 5_400_000)
         self.assertEqual(listing.price_qualifier, "conditional")
 
+    def test_explicit_cash_price_is_captured_separately_from_credit_price(self) -> None:
+        listing = normalize_listing(
+            "avito",
+            "https://www.avito.ru/item/20",
+            "20",
+            (
+                "Volkswagen Teramont Pro 2026 Summit. Цена 5 400 000 ₽ только при кредите. "
+                "Полная цена за наличные 5 999 000 ₽."
+            ),
+            {},
+        )
+
+        self.assertEqual(listing.advertised_price, 5_400_000)
+        self.assertEqual(listing.cash_price, 5_999_000)
+
+    def test_eaeu_cash_price_keeps_source_currency(self) -> None:
+        listing = normalize_listing(
+            "mashina",
+            "https://m.mashina.kg/details/21",
+            "21",
+            "Volkswagen Teramont Pro 2026 Summit. За наличные 6 500 000 сом.",
+            {},
+        )
+
+        self.assertEqual(listing.cash_price, 6_500_000)
+        self.assertEqual(listing.price_currency, "KGS")
+
     def test_missing_critical_facts_stay_unknown(self) -> None:
         listing = normalize_listing(
             "mashina",
@@ -95,6 +122,22 @@ class NormalizeListingTests(unittest.TestCase):
         self.assertEqual(listing.advertised_price, 6_100_000)
         self.assertIsNone(listing.cash_price)
 
+    def test_negative_epts_and_recycling_fee_wording_is_not_misread_as_paid(self) -> None:
+        listing = normalize_listing(
+            "autoru",
+            "https://auto.ru/cars/new/sale/volkswagen/teramont/9/",
+            "9",
+            (
+                "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, "
+                "пробег 10 км, в наличии. ЭПТС не оформлен. "
+                "Коммерческий утильсбор не уплачен."
+            ),
+            {},
+        )
+
+        self.assertEqual(listing.epts_status, "missing")
+        self.assertEqual(listing.commercial_recycling_fee_status, "unpaid")
+
     def test_in_dealership_phrase_is_not_an_interior_color(self) -> None:
         listing = normalize_listing(
             "drom",
@@ -104,6 +147,34 @@ class NormalizeListingTests(unittest.TestCase):
             {},
         )
         self.assertIsNone(listing.interior_black.value)
+
+    def test_title_never_falls_back_to_phone_or_email_from_page_text(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/7.html",
+            "7",
+            (
+                "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, "
+                "пробег 10 км, в наличии. Телефон +7 999 123-45-67, seller@example.com"
+            ),
+            {},
+        )
+
+        self.assertIn("Volkswagen Teramont Pro", listing.title)
+        self.assertNotIn("999", listing.title)
+        self.assertNotIn("@", listing.title)
+
+    def test_structured_title_has_contact_details_removed(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/8.html",
+            "8",
+            "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, пробег 10 км, в наличии",
+            {"title": "Teramont Pro +7 (999) 123-45-67 sales@example.com"},
+        )
+
+        self.assertNotIn("999", listing.title)
+        self.assertNotIn("@", listing.title)
 
 
 if __name__ == "__main__":

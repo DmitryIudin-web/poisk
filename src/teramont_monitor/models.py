@@ -78,6 +78,7 @@ class SourceResult:
     listings: tuple[Listing, ...] = ()
     gap: SourceGap | None = None
     search_url: str | None = None
+    complete: bool = True
     warnings: tuple[SourceGap, ...] = ()
 
 

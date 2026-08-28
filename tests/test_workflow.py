@@ -39,6 +39,18 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertLess(first_push_at, notify_at)
         self.assertLess(notify_at, second_push_at)
 
+    def test_collect_failure_is_reported_only_after_source_gaps_are_persisted(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("id: collect", text)
+        self.assertIn('collect_status=${PIPESTATUS[0]}', text)
+        self.assertIn('collect_status=$collect_status', text)
+        persist_at = text.index("Persist observations and pending events")
+        fail_at = text.index("Fail after persisting source gaps")
+        notify_at = text.index("Deliver significant Telegram events")
+        self.assertLess(persist_at, fail_at)
+        self.assertLess(fail_at, notify_at)
+        self.assertIn('steps.collect.outputs.collect_status', text)
+
     def test_first_state_branch_setup_does_not_remove_already_empty_orphan(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("switch --orphan monitor-state", text)

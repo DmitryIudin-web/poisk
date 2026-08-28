@@ -76,11 +76,14 @@ def _gap(config: SourceConfig, code: str, message: str, warnings=()) -> SourceRe
         False,
         gap=SourceGap(config.name, code, message[:300]),
         search_url=config.search_url,
+        complete=False,
         warnings=tuple(warnings),
     )
 
 
 def _fetch_gap(config: SourceConfig, error: Exception) -> tuple[str, str]:
+    if isinstance(error, PermissionError):
+        return "blocked", str(error)
     if isinstance(error, HTTPError):
         if error.code == 429:
             return "rate_limited", "HTTP 429"
@@ -130,7 +133,7 @@ def scan_source(
     links = extract_links(search_html, config)
     if not links:
         if any(marker.casefold() in lowered for marker in config.empty_markers):
-            return SourceResult(config.name, True, (), search_url=config.search_url)
+            return SourceResult(config.name, True, (), search_url=config.search_url, complete=True)
         return _gap(config, "unexpected_empty", "no listing links and no explicit empty-result marker")
 
     listings = []
@@ -147,8 +150,8 @@ def scan_source(
                 raise ValueError("detail page has no readable content")
             listings.append(normalize_listing(config.name, url, listing_id, detail_text, metadata))
         except Exception as error:  # one broken listing must not discard its source
-            _, message = _fetch_gap(config, error)
-            warnings.append(SourceGap(config.name, "detail_failed", f"{listing_id}: {message}"))
+            code, message = _fetch_gap(config, error)
+            warnings.append(SourceGap(config.name, f"detail_{code}", f"{listing_id}: {message}"))
 
     if not listings:
         return _gap(config, "detail_failed", "all discovered detail pages failed", warnings)
@@ -157,6 +160,7 @@ def scan_source(
         True,
         tuple(listings),
         search_url=config.search_url,
+        complete=len(links) <= config.max_details and not warnings,
         warnings=tuple(warnings),
     )
 

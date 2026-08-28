@@ -102,7 +102,24 @@ class SourceScannerTests(unittest.TestCase):
         self.assertTrue(result.ok)
         self.assertEqual(len(result.listings), 1)
         self.assertEqual(len(result.warnings), 1)
-        self.assertEqual(result.warnings[0].code, "detail_failed")
+        self.assertEqual(result.warnings[0].code, "detail_timeout")
+        self.assertFalse(result.complete)
+
+    def test_hitting_detail_cap_marks_scan_incomplete(self) -> None:
+        config = BY_NAME["kolesa"]
+        search = fixture("kolesa").replace(
+            "</body>", '<a href="/a/show/227501941">Volkswagen Teramont</a></body>'
+        )
+        limited = type(config)(**{**config.__dict__, "max_details": 1})
+
+        def fetch(url: str, _timeout: float) -> str:
+            return search if url == config.search_url else DETAIL
+
+        result = scan_source(limited, fetcher=fetch, sleeper=lambda _: None)
+
+        self.assertTrue(result.ok)
+        self.assertEqual(len(result.listings), 1)
+        self.assertFalse(result.complete)
 
     def test_blocked_detail_page_is_not_normalized_as_a_listing(self) -> None:
         config = BY_NAME["drom"]
@@ -114,6 +131,7 @@ class SourceScannerTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertEqual(result.gap.code, "detail_failed")
+        self.assertEqual(result.warnings[0].code, "detail_blocked")
 
     def test_one_source_failure_does_not_discard_other_sources(self) -> None:
         configs = [BY_NAME["drom"], BY_NAME["mashina"]]

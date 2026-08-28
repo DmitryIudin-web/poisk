@@ -9,9 +9,20 @@ from .models import Evidence, Listing
 
 _SPACE = re.compile(r"\s+")
 _VIN = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b", re.IGNORECASE)
+_EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
+_PHONE_CANDIDATE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
 _MILEAGE = re.compile(r"(?:пробег|mileage)\D{0,18}([\d\s\u00a0]{1,12})\s*(?:км|km)\b", re.IGNORECASE)
 _MONEY = re.compile(
     r"(\d[\d\s\u00a0]{2,14})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt)",
+    re.IGNORECASE,
+)
+_CASH_LABEL = r"(?:за наличные|без кредита|полная цена|наличный расч[её]т)"
+_CASH_AFTER = re.compile(
+    rf"{_CASH_LABEL}\D{{0,30}}(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt)",
+    re.IGNORECASE,
+)
+_CASH_BEFORE = re.compile(
+    rf"(\d[\d\s\u00a0]{{2,14}})\s*(₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt)\D{{0,30}}{_CASH_LABEL}",
     re.IGNORECASE,
 )
 
@@ -27,6 +38,17 @@ def _clean(value: Any) -> str:
 
 def _excerpt(value: str, limit: int = 120) -> str:
     return value[:limit].strip()
+
+
+def _safe_title(value: str) -> str:
+    value = _EMAIL.sub("", _clean(value))
+
+    def remove_phone(match: re.Match[str]) -> str:
+        return "" if len(re.sub(r"\D", "", match.group(0))) >= 10 else match.group(0)
+
+    value = _PHONE_CANDIDATE.sub(remove_phone, value)
+    value = re.sub(r"(?:телефон|тел\.?|phone)\s*[:\-]?", "", value, flags=re.IGNORECASE)
+    return _excerpt(_clean(value).strip(" ,;|-"), 180)
 
 
 def _boolean_evidence(text: str, positive: tuple[str, ...], negative: tuple[str, ...] = ()) -> Evidence:
@@ -68,12 +90,20 @@ def _extract_price(text: str, metadata: Mapping[str, Any]) -> tuple[int | None, 
         first = matches[0]
         advertised = _parse_number(first.group(1))
         currency = _currency(first.group(2))
-        window = text[max(0, first.start() - 55) : min(len(text), first.end() + 55)].casefold()
+        sentence_start = max(text.rfind(marker, 0, first.start()) for marker in ".;|") + 1
+        sentence_ends = [position for marker in ".;|" if (position := text.find(marker, first.end())) >= 0]
+        sentence_end = min(sentence_ends) if sentence_ends else len(text)
+        window = text[sentence_start:sentence_end].casefold()
         conditional = any(marker in window for marker in ("кредит", "trade-in", "trade in", "трейд-ин", "страхов"))
         unconditional = any(marker in window for marker in ("за наличные", "без кредита", "полная цена", "наличный расчет", "наличный расчёт"))
         qualifier = "conditional" if conditional and not unconditional else "unconditional" if unconditional else "unqualified"
-        if unconditional and currency == "RUB":
+        if unconditional:
             cash = advertised
+
+    explicit_cash = _CASH_AFTER.search(text) or _CASH_BEFORE.search(text)
+    if explicit_cash:
+        cash = _parse_number(explicit_cash.group(1))
+        currency = _currency(explicit_cash.group(2))
 
     meta_price = metadata.get("price")
     if advertised is None and isinstance(meta_price, (int, float)) and not isinstance(meta_price, bool):
@@ -162,18 +192,24 @@ def normalize_listing(
     location = _extract_location(clean_text, metadata)
 
     epts = None
-    if re.search(r"э\s*птс.{0,25}(?:действующ|оформлен|выдан)", clean_text, re.IGNORECASE):
-        epts = "valid"
-    elif re.search(r"э\s*птс.{0,25}(?:нет|отсутств|не оформлен)", clean_text, re.IGNORECASE):
+    if re.search(r"э\s*птс.{0,25}(?:нет|отсутств|не оформлен)", clean_text, re.IGNORECASE):
         epts = "missing"
+    elif re.search(r"э\s*птс.{0,25}(?:действующ|оформлен|выдан)", clean_text, re.IGNORECASE):
+        epts = "valid"
 
     recycling = None
-    if re.search(r"коммерческ\w*\s+утильсбор.{0,30}(?:уплачен|списан|оплачен)", clean_text, re.IGNORECASE):
-        recycling = "paid"
-    elif re.search(r"коммерческ\w*\s+утильсбор.{0,30}(?:не уплачен|не списан)", clean_text, re.IGNORECASE):
+    if re.search(r"коммерческ\w*\s+утильсбор.{0,30}(?:не уплачен|не списан|не оплачен)", clean_text, re.IGNORECASE):
         recycling = "unpaid"
+    elif re.search(r"коммерческ\w*\s+утильсбор.{0,30}(?:уплачен|списан|оплачен)", clean_text, re.IGNORECASE):
+        recycling = "paid"
 
-    title = _clean(metadata.get("title")) or _excerpt(clean_text, 180)
+    fallback_title = "Volkswagen Teramont Pro" if model_positive else "Volkswagen Teramont" if model_seen else "Объявление автомобиля"
+    if year is not None:
+        fallback_title += f" {year}"
+    trim_match = re.search(r"\b(peak|summit)\b", clean_text, re.IGNORECASE)
+    if trim_match:
+        fallback_title += f" {trim_match.group(1).title()}"
+    title = _safe_title(str(metadata.get("title") or "")) or fallback_title
     return Listing(
         source=source,
         url=url,
