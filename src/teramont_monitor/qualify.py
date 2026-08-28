@@ -16,12 +16,6 @@ def qualify(listing: Listing, profile: TargetProfile | None = None) -> tuple[str
             ("dcc", listing.dcc.value),
             ("mileage", None if listing.mileage_km is None else 0 <= listing.mileage_km <= 1_000),
             ("in_stock", listing.in_stock.value),
-            (
-                "region",
-                None
-                if listing.region == "unknown"
-                else listing.region in {"russia", "bishkek", "eaeu_other"},
-            ),
         ]
     else:
         checks = [
@@ -40,14 +34,17 @@ def qualify(listing: Listing, profile: TargetProfile | None = None) -> tuple[str
                     else 0 <= listing.mileage_km <= profile.max_mileage_km,
                 ),
                 ("in_stock", listing.in_stock.value),
+            )
+        )
+        if profile.required_region:
+            checks.append(
                 (
                     "region",
                     None
                     if listing.region == "unknown"
                     else listing.region in profile.allowed_regions,
-                ),
+                )
             )
-        )
         if listing.region in profile.lhd_required_regions:
             checks.append(("steering_left", listing.steering_left.value))
     failed = tuple(name for name, value in checks if value is False)

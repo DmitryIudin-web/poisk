@@ -215,13 +215,20 @@ def _extract_model_year(text: str, metadata: Mapping[str, Any]) -> int | None:
     if isinstance(structured, (int, float)) and not isinstance(structured, bool):
         return int(structured)
     explicit_pattern = re.compile(
-        r"(?:model year|modelljahr|модельный год|год выпуска|year)\D{0,12}(20\d{2})",
+        r"(?:model year|modelljahr|модельный год|год выпуска)\D{0,12}(20\d{2})",
         re.IGNORECASE,
     )
     for explicit in explicit_pattern.finditer(text):
         prefix = text[max(0, explicit.start() - 24):explicit.start()]
         if not re.search(r"copyright", prefix, re.IGNORECASE):
             return int(explicit.group(1))
+    structured_year = re.search(
+        r"(?:^|[.;|\n])\s*year\s*[:=-]\s*(20\d{2})\b",
+        text,
+        re.IGNORECASE,
+    )
+    if structured_year:
+        return int(structured_year.group(1))
     vehicle = re.compile(
         r"(?:\b(?:volkswagen\s+)?teramont\s*pro\b|терамонт\s*про|途昂\s*pro|"
         r"\b(?:land\s+rover\s+)?range\s+rover\b|\bl460\b)"
@@ -231,7 +238,8 @@ def _extract_model_year(text: str, metadata: Mapping[str, Any]) -> int | None:
     for match in vehicle.finditer(text):
         context = match.group("context")
         if not re.search(
-            r"copyright|first registration|erstzulassung|первая регистрация",
+            r"copyright|warranty|guarantee|garantie|гарант|"
+            r"first registration|erstzulassung|первая регистрация",
             context,
             re.IGNORECASE,
         ):
@@ -262,6 +270,7 @@ def _region(
     source_market: str | None,
     *,
     legacy_regions: bool,
+    infer_source_region: bool,
 ) -> str:
     haystack = f"{location or ''} {text}".casefold()
     if any(marker in haystack for marker in ("dubai", "united arab emirates", "uae", "оаэ")):
@@ -284,10 +293,11 @@ def _region(
         return "russia"
     if location:
         return "unknown"
-    if source_market in {"russia", "kyrgyzstan", "georgia", "europe"}:
-        return source_market
-    if source in {"autoru", "drom", "avito"}:
-        return "russia"
+    if infer_source_region:
+        if source_market in {"russia", "kyrgyzstan", "georgia", "europe"}:
+            return source_market
+        if source in {"autoru", "drom", "avito"}:
+            return "russia"
     return "unknown"
 
 
@@ -394,6 +404,7 @@ def normalize_listing(
             clean_text,
             market,
             legacy_regions=target_id == _LEGACY_TARGET_ID,
+            infer_source_region=profile is None or not profile.required_region,
         ),
         source_market=market if market in {"russia", "kyrgyzstan", "georgia", "europe"} else "unknown",
         location=location,

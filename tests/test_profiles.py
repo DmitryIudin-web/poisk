@@ -22,6 +22,7 @@ class TargetProfileTests(unittest.TestCase):
             getattr(teramont, "allowed_regions", ()),
             ("russia", "bishkek", "eaeu_other"),
         )
+        self.assertIs(getattr(teramont, "required_region", None), False)
         self.assertEqual(teramont.price_drop_thresholds, {"RUB": 50_000})
         self.assertEqual(
             range_rover.required_evidence,
@@ -32,6 +33,7 @@ class TargetProfileTests(unittest.TestCase):
             getattr(range_rover, "allowed_regions", ()),
             ("russia", "kyrgyzstan", "georgia", "europe"),
         )
+        self.assertIs(getattr(range_rover, "required_region", None), True)
         self.assertEqual(range_rover.lhd_required_regions, ("europe",))
         self.assertEqual(
             range_rover.price_drop_thresholds,

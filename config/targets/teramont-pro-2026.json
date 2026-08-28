@@ -5,6 +5,7 @@
   "max_mileage_km": 1000,
   "required_evidence": ["model_match", "top_trim", "dcc"],
   "allowed_regions": ["russia", "bishkek", "eaeu_other"],
+  "required_region": false,
   "lhd_required_regions": [],
   "price_drop_thresholds": {"RUB": 50000},
   "evidence_rules": {

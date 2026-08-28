@@ -36,7 +36,8 @@ def matching_range_rover(**changes):
         (
             "Range Rover L460 D350 2026 Autobiography. Exterior: Santorini Black. "
             "Interior: Ebony Black. Mileage 19 km. In stock. Left hand drive. "
-            "Factory Rear Seat Entertainment with two rear screens."
+            "Factory Rear Seat Entertainment with two rear screens. "
+            "Location: Tbilisi, Georgia."
         ),
         {},
         RANGE_ROVER_PROFILE,

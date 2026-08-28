@@ -73,6 +73,24 @@ class FinalRegressionTests(unittest.TestCase):
         self.assertEqual(status, "candidate")
         self.assertIn("region", reasons)
 
+    def test_configured_rr_source_market_without_physical_location_stays_candidate(self) -> None:
+        listing = normalize_listing(
+            "autoru",
+            "https://auto.ru/cars/new/sale/land_rover/range_rover/no-location/",
+            "no-location",
+            range_rover_text("In stock."),
+            {},
+            RANGE_ROVER_PROFILE,
+            market="russia",
+        )
+
+        status, reasons = qualify(listing, RANGE_ROVER_PROFILE)
+
+        self.assertEqual(listing.source_market, "russia")
+        self.assertEqual(listing.region, "unknown")
+        self.assertEqual(status, "candidate")
+        self.assertIn("region", reasons)
+
     def test_non_stock_language_patterns_win_before_positive_substrings(self) -> None:
         cases = (
             "Not in stock; available to order.",
@@ -96,6 +114,16 @@ class FinalRegressionTests(unittest.TestCase):
 
     def test_aftermarket_removable_and_headrest_rse_wording_wins(self) -> None:
         cases = (
+            "Rear Seat Entertainment is aftermarket.",
+            "RSE retrofit.",
+            "Rear Seat Entertainment is non-factory.",
+            "RSE with removable screens.",
+            "Rear Seat Entertainment uses headrest screens.",
+            "Aftermarket Rear Seat Entertainment.",
+            "Retrofit RSE.",
+            "Removable RSE screens.",
+            "Headrest-mounted RSE system.",
+            "Tablet-based RSE system.",
             "Aftermarket removable tablet screens mounted to the headrests.",
             "Headrest screen retrofit kit fitted by the dealer.",
             "RSE with tablet displays for the rear passengers.",
@@ -107,7 +135,11 @@ class FinalRegressionTests(unittest.TestCase):
                     "mobile_de",
                     "https://example.test/rse",
                     "rse",
-                    range_rover_text(f"In stock. {wording}"),
+                    (
+                        "Range Rover L460 D350 Autobiography. Model Year 2026. "
+                        "Exterior: Santorini Black. Interior: Ebony Black. Mileage 19 km. "
+                        f"Left hand drive. In stock. {wording}"
+                    ),
                     {},
                     RANGE_ROVER_PROFILE,
                     market="europe",
@@ -154,6 +186,32 @@ class FinalRegressionTests(unittest.TestCase):
             RANGE_ROVER_PROFILE,
             market="georgia",
         )
+        warranty_year_only = normalize_listing(
+            "autobridge",
+            "https://example.test/warranty-year",
+            "warranty-year",
+            (
+                "Range Rover L460 D350 Autobiography. Warranty year 2026. "
+                "Exterior: Black. Interior: Ebony. Mileage 19 km. In stock. "
+                "Rear Seat Entertainment."
+            ),
+            {},
+            RANGE_ROVER_PROFILE,
+            market="georgia",
+        )
+        structured_year_field = normalize_listing(
+            "autobridge",
+            "https://example.test/structured-year",
+            "structured-year",
+            (
+                "Range Rover L460 D350 Autobiography. Year: 2026. "
+                "Exterior: Black. Interior: Ebony. Mileage 19 km. In stock. "
+                "Rear Seat Entertainment."
+            ),
+            {},
+            RANGE_ROVER_PROFILE,
+            market="georgia",
+        )
         legacy_teramont = normalize_listing(
             "drom",
             "https://example.test/teramont-brand-new",
@@ -168,8 +226,26 @@ class FinalRegressionTests(unittest.TestCase):
 
         self.assertIsNone(copyright_only.year)
         self.assertIsNone(copyright_year_only.year)
+        self.assertIsNone(warranty_year_only.year)
+        self.assertEqual(structured_year_field.year, 2026)
         self.assertIsNone(brand_new_only.mileage_km)
         self.assertEqual(legacy_teramont.mileage_km, 0)
+
+    def test_kolesa_teramont_without_location_keeps_legacy_relevant(self) -> None:
+        listing = normalize_listing(
+            "kolesa",
+            "https://kolesa.kz/a/show/teramont-pro-no-location",
+            "teramont-pro-no-location",
+            (
+                "Volkswagen Teramont Pro 2026 Peak. Black on black. DCC. "
+                "Mileage 19 km. In stock."
+            ),
+            {},
+            TERAMONT_PROFILE,
+        )
+
+        self.assertEqual(listing.region, "unknown")
+        self.assertEqual(qualify(listing, TERAMONT_PROFILE), ("relevant", ()))
 
     def test_german_fixture_parses_fields_and_qualifies_relevant(self) -> None:
         page = (FIXTURES / "range_rover_detail_de_positive.html").read_text(encoding="utf-8")
