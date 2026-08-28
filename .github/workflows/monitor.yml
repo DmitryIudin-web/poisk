@@ -1,0 +1,103 @@
+name: Volkswagen Teramont Pro monitor
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: teramont-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONPATH: src
+      STATE_DIR: ${{ runner.temp }}/monitor-state
+      SUMMARY_PATH: ${{ runner.temp }}/monitor-summary.json
+
+    steps:
+      - name: Check out monitor code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Prepare durable state branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --heads origin monitor-state >/dev/null 2>&1; then
+            git fetch origin monitor-state:refs/remotes/origin/monitor-state
+            git worktree add -B monitor-state "$STATE_DIR" origin/monitor-state
+          else
+            git worktree add --detach "$STATE_DIR" HEAD
+            git -C "$STATE_DIR" switch --orphan monitor-state
+          fi
+          git -C "$STATE_DIR" config user.name "github-actions[bot]"
+          git -C "$STATE_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          touch "$STATE_DIR/history.jsonl"
+
+      - name: Collect marketplace observations
+        id: collect
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          python -m teramont_monitor collect \
+            --config config/sources.json \
+            --state-dir "$STATE_DIR" | tee "$SUMMARY_PATH"
+          collect_status=${PIPESTATUS[0]}
+          set -e
+          echo "collect_status=$collect_status" >> "$GITHUB_OUTPUT"
+
+      - name: Persist observations and pending events
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C "$STATE_DIR" add -A -- .
+          if ! git -C "$STATE_DIR" diff --cached --quiet; then
+            git -C "$STATE_DIR" commit -m "state: collect $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git -C "$STATE_DIR" push origin HEAD:monitor-state
+          fi
+
+      - name: Fail after persisting source gaps
+        if: steps.collect.outputs.collect_status != '0'
+        run: exit "${{ steps.collect.outputs.collect_status }}"
+
+      - name: Deliver significant Telegram events
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m teramont_monitor notify --state-dir "$STATE_DIR"
+
+      - name: Persist Telegram delivery state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C "$STATE_DIR" add -- state.json pending-events.json
+          if ! git -C "$STATE_DIR" diff --cached --quiet; then
+            git -C "$STATE_DIR" commit -m "state: confirm Telegram delivery $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            git -C "$STATE_DIR" push origin HEAD:monitor-state
+          fi
+
+      - name: Upload sanitized failure summary
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: teramont-monitor-diagnostics-${{ github.run_id }}
+          path: ${{ env.SUMMARY_PATH }}
+          if-no-files-found: ignore
+          retention-days: 14
