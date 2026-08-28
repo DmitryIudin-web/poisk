@@ -1,0 +1,23 @@
+{
+  "target_id": "teramont-pro-2026",
+  "display_name": "Volkswagen Teramont Pro 2026",
+  "year": 2026,
+  "max_mileage_km": 1000,
+  "required_evidence": ["model_match", "top_trim", "dcc"],
+  "lhd_required_regions": [],
+  "price_drop_thresholds": {"RUB": 50000},
+  "evidence_rules": {
+    "model_match": {
+      "positive_groups": [["(?:volkswagen\\s+)?teramont\\s*pro|терамонт\\s*про|途昂\\s*pro"]],
+      "negative_patterns": ["teramont(?!\\s*pro)|терамонт(?!\\s*про)"]
+    },
+    "top_trim": {
+      "positive_groups": [["\\bpeak\\b"], ["\\bsummit\\b"], ["максимальная комплектация|топовая комплектация|top trim|maximum trim"]],
+      "negative_patterns": []
+    },
+    "dcc": {
+      "positive_groups": [["\\bdcc\\b|adaptive chassis control|адаптивная подвеска|адаптивное шасси"]],
+      "negative_patterns": ["без dcc|no dcc"]
+    }
+  }
+}
