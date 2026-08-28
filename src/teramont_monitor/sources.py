@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import socket
 import time
 from dataclasses import dataclass
@@ -15,6 +16,8 @@ from .normalize import normalize_listing
 
 
 Fetcher = Callable[[str, float], str]
+_TITLE = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+_SUSPICIOUS_PAGE_SIZE = 5_000
 
 
 @dataclass(frozen=True)
@@ -93,6 +96,17 @@ def _fetch_gap(config: SourceConfig, error: Exception) -> tuple[str, str]:
     return "fetch_error", f"{type(error).__name__}: {error}"
 
 
+def _page_has_marker(page_html: str, markers: tuple[str, ...]) -> bool:
+    title_match = _TITLE.search(page_html)
+    title = title_match.group(1).casefold() if title_match else ""
+    if any(marker.casefold() in title for marker in markers):
+        return True
+    if len(page_html) < _SUSPICIOUS_PAGE_SIZE:
+        lowered = page_html.casefold()
+        return any(marker.casefold() in lowered for marker in markers)
+    return False
+
+
 def scan_source(
     config: SourceConfig,
     *,
@@ -108,9 +122,9 @@ def scan_source(
         return _gap(config, code, message)
 
     lowered = search_html.casefold()
-    if any(marker.casefold() in lowered for marker in config.blocked_markers):
+    if _page_has_marker(search_html, config.blocked_markers):
         return _gap(config, "blocked", "marketplace returned an access-control page")
-    if any(marker in lowered for marker in ("too many requests", "error_429", "429 too")):
+    if _page_has_marker(search_html, ("too many requests", "error_429", "429 too")):
         return _gap(config, "rate_limited", "marketplace requested a slower rate")
 
     links = extract_links(search_html, config)
@@ -126,6 +140,8 @@ def scan_source(
             sleeper(config.delay_seconds)
         try:
             detail_html = fetcher(url, config.timeout_seconds)
+            if _page_has_marker(detail_html, config.blocked_markers):
+                raise PermissionError("marketplace returned an access-control detail page")
             detail_text, metadata = extract_detail(detail_html)
             if not detail_text:
                 raise ValueError("detail page has no readable content")

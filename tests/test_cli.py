@@ -66,6 +66,9 @@ class CliTests(unittest.TestCase):
     def test_smoke_never_writes_state(self) -> None:
         summary = smoke(CONFIG, fetcher=fixture_fetcher)
         self.assertEqual(summary.successful_sources, 5)
+        self.assertEqual(set(summary.source_statuses), {"autoru", "drom", "avito", "mashina", "kolesa"})
+        self.assertEqual(summary.source_statuses["drom"]["status"], "ok")
+        self.assertEqual(summary.source_statuses["drom"]["listings"], 1)
 
     def test_notify_command_requires_both_environment_secrets(self) -> None:
         with TemporaryDirectory() as directory:

@@ -22,6 +22,7 @@ class RunSummary:
     listings: int
     new_events: int
     gaps: dict[str, str]
+    source_statuses: dict[str, dict[str, int | str]]
     exit_code: int
 
 
@@ -38,6 +39,14 @@ def _summary(results, new_events: int = 0) -> RunSummary:
         listings=sum(len(result.listings) for result in results.values()),
         new_events=new_events,
         gaps={name: result.gap.code for name, result in results.items() if result.gap},
+        source_statuses={
+            name: (
+                {"status": "ok", "listings": len(result.listings), "warnings": len(result.warnings)}
+                if result.ok
+                else {"status": "source_gap", "listings": 0, "gap": result.gap.code if result.gap else "unknown"}
+            )
+            for name, result in results.items()
+        },
         exit_code=0 if successful else 2,
     )
 

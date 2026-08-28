@@ -36,6 +36,13 @@ class HtmlExtractionTests(unittest.TestCase):
         self.assertEqual(len(links), 1)
         self.assertNotIn("evil.example", links[0][1])
 
+    def test_malformed_url_candidate_does_not_abort_valid_links(self) -> None:
+        page = '<a href="//[broken">bad</a>' + self.fixture("drom")
+        self.assertEqual(
+            extract_links(page, self.configs["drom"]),
+            [("460325385", "https://auto.drom.ru/moscow/volkswagen/teramont/460325385.html")],
+        )
+
     def test_extract_detail_combines_visible_text_meta_and_jsonld(self) -> None:
         html = """
         <html><head><meta name="description" content="Автомобиль в наличии">

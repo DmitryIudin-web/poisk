@@ -79,7 +79,10 @@ def extract_links(page_html: str, config: LinkConfig) -> list[tuple[str, str]]:
     seen: set[str] = set()
     for raw in raw_candidates:
         decoded = html_module.unescape(raw).replace(r"\/", "/").replace(r"\u002F", "/")
-        absolute = canonical_url(urljoin(config.search_url, decoded))
+        try:
+            absolute = canonical_url(urljoin(config.search_url, decoded))
+        except ValueError:
+            continue
         if not _host_allowed(urlsplit(absolute).netloc, config.allowed_hosts):
             continue
         lowered = absolute.casefold()

@@ -45,7 +45,7 @@ def _color_evidence(text: str, labels: tuple[str, ...]) -> Evidence:
     if "black on black" in lowered or "черный на черном" in lowered or "чёрный на чёрном" in lowered:
         return Evidence(True, "black on black")
     for label in labels:
-        match = re.search(rf"{label}\s*[:\-]?\s*([^.;,|]{{1,40}})", text, re.IGNORECASE)
+        match = re.search(rf"(?:{label})\b\s*[:\-]?\s*([^.;,|]{{1,40}})", text, re.IGNORECASE)
         if not match:
             continue
         value = _excerpt(match.group(1), 40)

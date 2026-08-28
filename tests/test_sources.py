@@ -24,6 +24,7 @@ def fixture(name: str) -> str:
 class SourceScannerTests(unittest.TestCase):
     def test_loads_exactly_five_sources(self) -> None:
         self.assertEqual([config.name for config in CONFIGS], ["autoru", "drom", "avito", "mashina", "kolesa"])
+        self.assertTrue(all(config.user_agent.startswith("Mozilla/5.0") for config in CONFIGS))
 
     def test_scans_search_and_detail_page(self) -> None:
         config = BY_NAME["drom"]
@@ -45,6 +46,18 @@ class SourceScannerTests(unittest.TestCase):
         )
         self.assertFalse(result.ok)
         self.assertEqual(result.gap.code, "blocked")
+
+    def test_captcha_word_in_normal_large_page_script_is_not_blocked(self) -> None:
+        config = BY_NAME["avito"]
+        search = "<html><title>Авито — объявления</title><script>captchaWidget</script>" + fixture("avito") + ("x" * 6_000)
+
+        def fetch(url: str, _timeout: float) -> str:
+            return search if url == config.search_url else DETAIL
+
+        result = scan_source(config, fetcher=fetch, sleeper=lambda _: None)
+
+        self.assertTrue(result.ok)
+        self.assertEqual(len(result.listings), 1)
 
     def test_http_429_is_rate_limit_gap(self) -> None:
         def fetch(url: str, _timeout: float) -> str:
@@ -90,6 +103,17 @@ class SourceScannerTests(unittest.TestCase):
         self.assertEqual(len(result.listings), 1)
         self.assertEqual(len(result.warnings), 1)
         self.assertEqual(result.warnings[0].code, "detail_failed")
+
+    def test_blocked_detail_page_is_not_normalized_as_a_listing(self) -> None:
+        config = BY_NAME["drom"]
+
+        def fetch(url: str, _timeout: float) -> str:
+            return fixture("drom") if url == config.search_url else "<html><title>Captcha — доступ ограничен</title></html>"
+
+        result = scan_source(config, fetcher=fetch, sleeper=lambda _: None)
+
+        self.assertFalse(result.ok)
+        self.assertEqual(result.gap.code, "detail_failed")
 
     def test_one_source_failure_does_not_discard_other_sources(self) -> None:
         configs = [BY_NAME["drom"], BY_NAME["mashina"]]

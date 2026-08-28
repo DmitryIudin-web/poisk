@@ -95,6 +95,16 @@ class NormalizeListingTests(unittest.TestCase):
         self.assertEqual(listing.advertised_price, 6_100_000)
         self.assertIsNone(listing.cash_price)
 
+    def test_in_dealership_phrase_is_not_an_interior_color(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/6.html",
+            "6",
+            "Volkswagen Teramont Pro 2026 Peak, цвет кузова: черный, DCC, автомобиль в салоне",
+            {},
+        )
+        self.assertIsNone(listing.interior_black.value)
+
 
 if __name__ == "__main__":
     unittest.main()
