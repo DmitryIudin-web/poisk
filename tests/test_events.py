@@ -7,15 +7,26 @@ from teramont_monitor.events import apply_scan
 from teramont_monitor.identity import listing_key
 from teramont_monitor.models import Evidence, ListingState, MonitorState, SourceGap, SourceResult
 from teramont_monitor.qualify import qualify
-from tests.test_qualify import matching_listing
+from tests.test_qualify import (
+    RANGE_ROVER_PROFILE,
+    TERAMONT_PROFILE,
+    matching_listing,
+    matching_range_rover,
+)
 
 
 NOW = "2026-08-28T12:00:00Z"
 
 
-def state_with(listing=None, *, misses: int = 0, removed: bool = False) -> MonitorState:
+def state_with(
+    listing=None,
+    profile=TERAMONT_PROFILE,
+    *,
+    misses: int = 0,
+    removed: bool = False,
+) -> MonitorState:
     listing = listing or matching_listing()
-    status, missing = qualify(listing)
+    status, missing = qualify(listing, profile)
     key = listing_key(listing)
     return MonitorState(
         listings={key: ListingState(listing, status, missing, misses, "2026-08-28T11:00:00Z", removed)}
@@ -24,6 +35,14 @@ def state_with(listing=None, *, misses: int = 0, removed: bool = False) -> Monit
 
 def successful(listings=()) -> dict[str, SourceResult]:
     return {"drom": SourceResult("drom", True, tuple(listings), search_url="https://auto.drom.ru/search")}
+
+
+def range_rover_successful(listings=()) -> dict[str, SourceResult]:
+    return {
+        "autobridge": SourceResult(
+            "autobridge", True, tuple(listings), search_url="https://autobridge.ge/en/listings"
+        )
+    }
 
 
 class EventTransitionTests(unittest.TestCase):
@@ -112,6 +131,58 @@ class EventTransitionTests(unittest.TestCase):
 
         self.assertEqual([event.kind for event in events], ["price_drop"])
         self.assertEqual(events[0].detail["drop"], 50_000)
+
+    def test_range_rover_price_drop_thresholds_are_currency_specific(self) -> None:
+        for currency, threshold in RANGE_ROVER_PROFILE.price_drop_thresholds.items():
+            with self.subTest(currency=currency, transition="below_threshold"):
+                old = state_with(
+                    matching_range_rover(cash_price=threshold * 3, price_currency=currency),
+                    RANGE_ROVER_PROFILE,
+                )
+                current = matching_range_rover(
+                    cash_price=threshold * 2 + 1,
+                    price_currency=currency,
+                )
+
+                _, events, _ = apply_scan(
+                    old, range_rover_successful([current]), NOW, RANGE_ROVER_PROFILE
+                )
+
+                self.assertEqual(events, [])
+
+            with self.subTest(currency=currency, transition="exact_threshold"):
+                old = state_with(
+                    matching_range_rover(cash_price=threshold * 3, price_currency=currency),
+                    RANGE_ROVER_PROFILE,
+                )
+                current = matching_range_rover(
+                    cash_price=threshold * 2,
+                    price_currency=currency,
+                )
+
+                _, events, _ = apply_scan(
+                    old, range_rover_successful([current]), NOW, RANGE_ROVER_PROFILE
+                )
+
+                self.assertEqual([event.kind for event in events], ["price_drop"])
+                self.assertEqual(events[0].detail["currency"], currency)
+                self.assertEqual(
+                    events[0].listing_key,
+                    "range-rover-l460-d350-autobiography-2026:autobridge:1",
+                )
+
+    def test_price_drop_is_silent_when_currency_changes(self) -> None:
+        old = state_with(
+            matching_range_rover(cash_price=200_000, price_currency="EUR"),
+            RANGE_ROVER_PROFILE,
+        )
+        current = matching_range_rover(cash_price=1, price_currency="RUB")
+
+        _, events, _ = apply_scan(
+            old, range_rover_successful([current]), NOW, RANGE_ROVER_PROFILE
+        )
+
+        self.assertEqual(events, [])
 
     def test_same_price_drop_can_alert_again_after_a_later_price_cycle(self) -> None:
         old = state_with(replace(matching_listing(), cash_price=6_000_000, price_currency="RUB"))

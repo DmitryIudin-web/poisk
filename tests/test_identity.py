@@ -4,7 +4,7 @@ import unittest
 from dataclasses import replace
 
 from teramont_monitor.identity import canonical_url, listing_key, vehicle_key
-from tests.test_qualify import matching_listing
+from tests.test_qualify import matching_listing, matching_range_rover
 
 
 class IdentityTests(unittest.TestCase):
@@ -19,6 +19,23 @@ class IdentityTests(unittest.TestCase):
 
         self.assertNotEqual(listing_key(first), listing_key(second))
         self.assertEqual(vehicle_key(first), vehicle_key(second))
+
+    def test_range_rover_identity_is_scoped_to_its_target(self) -> None:
+        listing = replace(
+            matching_range_rover(),
+            source="drom",
+            listing_id="123",
+            vin="SALGA2BK0RA000001",
+        )
+
+        self.assertEqual(
+            listing_key(listing),
+            "range-rover-l460-d350-autobiography-2026:drom:123",
+        )
+        self.assertEqual(
+            vehicle_key(listing),
+            "range-rover-l460-d350-autobiography-2026:vin:SALGA2BK0RA000001",
+        )
 
     def test_url_fallback_removes_tracking_and_fragment(self) -> None:
         listing = replace(
