@@ -44,6 +44,34 @@ class EventTransitionTests(unittest.TestCase):
         self.assertEqual(len(next_state.listings), 2)
         self.assertEqual([event.kind for event in events], ["new_relevant"])
 
+    def test_new_offer_alerts_when_old_offer_with_same_vin_becomes_irrelevant(self) -> None:
+        vin = "LSV2A2CA1PN123456"
+        old = replace(matching_listing(), vin=vin)
+        old_now_irrelevant = replace(old, exterior_black=Evidence(False, "белый"))
+        new_offer = replace(
+            old,
+            listing_id="2",
+            url="https://auto.drom.ru/moscow/volkswagen/teramont/2.html",
+        )
+
+        _, events, _ = apply_scan(state_with(old), successful([old_now_irrelevant, new_offer]), NOW)
+
+        self.assertEqual([event.kind for event in events], ["new_relevant"])
+        self.assertEqual(events[0].listing_key, "drom:2")
+
+    def test_new_offer_stays_silent_when_old_offer_with_same_vin_remains_relevant(self) -> None:
+        vin = "LSV2A2CA1PN123456"
+        old = replace(matching_listing(), vin=vin)
+        new_offer = replace(
+            old,
+            listing_id="2",
+            url="https://auto.drom.ru/moscow/volkswagen/teramont/2.html",
+        )
+
+        _, events, _ = apply_scan(state_with(old), successful([new_offer, old]), NOW)
+
+        self.assertEqual(events, [])
+
     def test_initial_candidate_is_stored_without_event(self) -> None:
         candidate = replace(matching_listing(), dcc=Evidence(None, None))
         next_state, events, _ = apply_scan(MonitorState(), successful([candidate]), NOW)
@@ -160,6 +188,14 @@ class EventTransitionTests(unittest.TestCase):
         _, events, _ = apply_scan(state_with(irrelevant), successful([sold]), NOW)
 
         self.assertEqual(events, [])
+
+    def test_previously_sold_candidate_becoming_relevant_is_confirmation(self) -> None:
+        candidate = replace(matching_listing(), dcc=Evidence(None, None), sold=Evidence(True, "продан"))
+        current = replace(matching_listing(), sold=Evidence(False, None))
+
+        _, events, _ = apply_scan(state_with(candidate, removed=True), successful([current]), NOW)
+
+        self.assertEqual([event.kind for event in events], ["critical_confirmation"])
 
     def test_reappearance_after_removal_emits_became_available(self) -> None:
         old = state_with(removed=True)

@@ -160,7 +160,7 @@ def scan_source(
         True,
         tuple(listings),
         search_url=config.search_url,
-        complete=len(links) <= config.max_details and not warnings,
+        complete=len(links) < config.max_details and not warnings,
         warnings=tuple(warnings),
     )
 

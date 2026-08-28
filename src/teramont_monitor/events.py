@@ -66,13 +66,23 @@ def apply_scan(
         name for name, result in source_results.items() if result.ok and result.complete
     }
     seen_by_source: dict[str, set[str]] = {name: set() for name in successful_sources}
-    active_vehicle_keys = {
-        vehicle_key(listing_state.listing)
-        for listing_state in next_state.listings.values()
-        if listing_state.status == "relevant"
-        and not listing_state.removed
-        and listing_state.listing.sold.value is not True
+    incoming_by_key = {
+        listing_key(listing): listing
+        for result in source_results.values()
+        if result.ok
+        for listing in result.listings
     }
+    active_vehicle_keys: set[str] = set()
+    for key, listing_state in next_state.listings.items():
+        if listing_state.status != "relevant" or listing_state.removed:
+            continue
+        incoming = incoming_by_key.get(key)
+        if incoming is None:
+            active_vehicle_keys.add(vehicle_key(listing_state.listing))
+            continue
+        incoming_status, _ = qualify(incoming)
+        if incoming_status == "relevant" and incoming.sold.value is not True:
+            active_vehicle_keys.add(vehicle_key(incoming))
 
     def emit(event: Event) -> None:
         if event.id not in known:
@@ -159,18 +169,48 @@ def apply_scan(
                 continue
 
             if was_removed and status == "relevant":
-                emit(
-                    _make_event(
-                        "became_available",
-                        key,
-                        observed_at,
-                        current,
-                        {
-                            "reason": "reappeared",
-                            "transition_anchor": previous_state.last_seen_at,
-                        },
+                current_vehicle_key = vehicle_key(current)
+                if previous_state.status == "relevant":
+                    emit(
+                        _make_event(
+                            "became_available",
+                            key,
+                            observed_at,
+                            current,
+                            {
+                                "reason": "reappeared",
+                                "transition_anchor": previous_state.last_seen_at,
+                            },
+                        )
                     )
-                )
+                elif previous_state.status == "candidate":
+                    confirmed = sorted(set(previous_state.missing) - set(missing))
+                    emit(
+                        _make_event(
+                            "critical_confirmation",
+                            key,
+                            observed_at,
+                            current,
+                            {
+                                "confirmed": confirmed,
+                                "transition_anchor": previous_state.last_seen_at,
+                            },
+                        )
+                    )
+                elif current_vehicle_key not in active_vehicle_keys:
+                    emit(
+                        _make_event(
+                            "new_relevant",
+                            key,
+                            observed_at,
+                            current,
+                            {
+                                "status": "relevant",
+                                "transition_anchor": previous_state.last_seen_at,
+                            },
+                        )
+                    )
+                active_vehicle_keys.add(current_vehicle_key)
                 continue
 
             if previous_state.status == "candidate" and status == "relevant":
@@ -187,6 +227,7 @@ def apply_scan(
                         },
                     )
                 )
+                active_vehicle_keys.add(vehicle_key(current))
                 continue
 
             if previous.in_stock.value is False and current.in_stock.value is True and status == "relevant":
@@ -202,6 +243,7 @@ def apply_scan(
                         },
                     )
                 )
+                active_vehicle_keys.add(vehicle_key(current))
                 continue
 
             if previous_state.status == "irrelevant" and status == "relevant":

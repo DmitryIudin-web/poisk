@@ -121,6 +121,19 @@ class SourceScannerTests(unittest.TestCase):
         self.assertEqual(len(result.listings), 1)
         self.assertFalse(result.complete)
 
+    def test_exact_detail_cap_is_still_incomplete(self) -> None:
+        config = BY_NAME["kolesa"]
+        limited = type(config)(**{**config.__dict__, "max_details": 1})
+
+        def fetch(url: str, _timeout: float) -> str:
+            return fixture("kolesa") if url == config.search_url else DETAIL
+
+        result = scan_source(limited, fetcher=fetch, sleeper=lambda _: None)
+
+        self.assertTrue(result.ok)
+        self.assertEqual(len(result.listings), 1)
+        self.assertFalse(result.complete)
+
     def test_blocked_detail_page_is_not_normalized_as_a_listing(self) -> None:
         config = BY_NAME["drom"]
 
