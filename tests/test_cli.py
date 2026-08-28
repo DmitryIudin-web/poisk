@@ -17,6 +17,7 @@ RANGE_ROVER_CONFIG = ROOT / "config" / "range-rover-sources.json"
 RANGE_ROVER_PROFILE = ROOT / "config" / "targets" / "range-rover-l460-d350-autobiography-2026.json"
 FIXTURES = Path(__file__).parent / "fixtures"
 SEARCH_URLS = {config.search_url for config in load_source_configs(CONFIG)}
+RANGE_ROVER_SEARCH_URLS = {config.search_url for config in load_source_configs(RANGE_ROVER_CONFIG)}
 DETAIL = (
     "<html><body>Volkswagen Teramont Pro 2026 Peak, black on black, DCC, "
     "пробег 10 км, физически в наличии, Москва</body></html>"
@@ -38,11 +39,7 @@ def fixture_fetcher(url: str, _timeout: float) -> str:
 
 
 def range_rover_fixture_fetcher(url: str, _timeout: float) -> str:
-    if any(marker in url for marker in (
-        "auto.ru/cars/land_rover", "auto.drom.ru/land_rover", "avito.ru/all/avtomobili",
-        "m.mashina.kg/catalog", "www.myauto.ge/en/main", "landrover-georgia.com/shop",
-        "autobridge.ge/en/listings?", "suchen.mobile.de/auto", "autoscout24.com/lst",
-    )):
+    if url in RANGE_ROVER_SEARCH_URLS:
         return (FIXTURES / "range_rover_sources.html").read_text(encoding="utf-8")
     return (
         "<html><body>Range Rover L460 D350 2026 Autobiography. Exterior: Santorini Black. "
@@ -51,7 +48,88 @@ def range_rover_fixture_fetcher(url: str, _timeout: float) -> str:
     )
 
 
+def structured_price_fetcher(url: str, timeout: float) -> str:
+    page = fixture_fetcher(url, timeout)
+    if url in SEARCH_URLS:
+        return page
+    return (
+        "<html><body>Volkswagen Teramont Pro 2026 Peak, black on black, DCC, "
+        "пробег 10 км, физически в наличии, Москва"
+        '<script type="application/ld+json">'
+        '{"name":"Volkswagen Teramont Pro 2026 Peak","price":5950000}'
+        "</script></body></html>"
+    )
+
+
+def structured_range_rover_price_fetcher(url: str, _timeout: float) -> str:
+    if url in RANGE_ROVER_SEARCH_URLS:
+        return (FIXTURES / "range_rover_sources.html").read_text(encoding="utf-8")
+    return (
+        "<html><body>Range Rover L460 D350 2026 Autobiography. Exterior: Santorini Black. "
+        "Interior: Ebony Black. Mileage 19 km. In stock. Left hand drive. "
+        "Factory Rear Seat Entertainment with two rear screens."
+        '<script type="application/ld+json">'
+        '{"name":"Range Rover L460 D350 Autobiography 2026","price":167000}'
+        "</script></body></html>"
+    )
+
+
 class CliTests(unittest.TestCase):
+    def test_collect_rejects_foreign_target_in_same_state_directory(self) -> None:
+        with TemporaryDirectory() as directory:
+            state_dir = Path(directory)
+            collect(CONFIG, state_dir, fetcher=fixture_fetcher, observed_at="2026-08-28T12:00:00Z")
+
+            with self.assertRaisesRegex(ValueError, "target"):
+                collect(
+                    RANGE_ROVER_CONFIG,
+                    state_dir,
+                    target_path=RANGE_ROVER_PROFILE,
+                    fetcher=range_rover_fixture_fetcher,
+                    observed_at="2026-08-28T13:00:00Z",
+                )
+
+            state = load_state(state_dir / "state.json")
+            self.assertTrue(state.listings)
+            self.assertTrue(all(
+                item.listing.target_id == "teramont-pro-2026"
+                for item in state.listings.values()
+            ))
+            self.assertTrue(all(
+                event.listing.target_id == "teramont-pro-2026"
+                for event in load_pending(state_dir / "pending-events.json")
+            ))
+
+    def test_default_teramont_collect_keeps_legacy_structured_price_currency(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            collect(
+                CONFIG,
+                root / "teramont",
+                fetcher=structured_price_fetcher,
+                observed_at="2026-08-28T12:00:00Z",
+            )
+            collect(
+                RANGE_ROVER_CONFIG,
+                root / "range-rover",
+                target_path=RANGE_ROVER_PROFILE,
+                fetcher=structured_range_rover_price_fetcher,
+                observed_at="2026-08-28T12:00:00Z",
+            )
+
+            self.assertEqual(
+                {item.listing.price_currency for item in load_state(root / "teramont/state.json").listings.values()},
+                {"RUB"},
+            )
+            self.assertEqual(
+                {item.listing.price_currency for item in load_state(root / "range-rover/state.json").listings.values()},
+                {None},
+            )
+            self.assertEqual(
+                {item.listing.advertised_price for item in load_state(root / "range-rover/state.json").listings.values()},
+                {167_000},
+            )
+
     def test_collect_keeps_target_states_in_separate_directories(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)

@@ -60,6 +60,19 @@ def _summary(results, new_events: int = 0) -> RunSummary:
     )
 
 
+def _assert_state_target_isolation(state, pending, target_id: str) -> None:
+    persisted_target_ids = {
+        item.listing.target_id for item in state.listings.values()
+    }
+    persisted_target_ids.update(event.listing.target_id for event in pending)
+    foreign_target_ids = persisted_target_ids - {target_id}
+    if foreign_target_ids:
+        raise ValueError(
+            "state directory contains events or listings for another target: "
+            + ", ".join(sorted(foreign_target_ids))
+        )
+
+
 def collect(
     config_path: str | Path,
     state_dir: str | Path,
@@ -71,10 +84,11 @@ def collect(
 ) -> RunSummary:
     observed_at = observed_at or _now()
     profile = load_target_profile(target_path)
-    results = scan_all(load_source_configs(config_path), profile, fetcher=fetcher)
     root = Path(state_dir)
     state = load_state(root / "state.json")
     pending = load_pending(root / "pending-events.json")
+    _assert_state_target_isolation(state, pending, profile.target_id)
+    results = scan_all(load_source_configs(config_path), profile, fetcher=fetcher)
     known = {event.id for event in pending}
     next_state, events, history = apply_scan(state, results, observed_at, profile, known_event_ids=known)
     summary = _summary(results, len(events))

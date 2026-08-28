@@ -247,7 +247,7 @@ def normalize_listing(
     cash_price, advertised_price, currency, qualifier = _extract_price(
         clean_text,
         metadata,
-        default_metadata_currency="RUB" if profile is None else None,
+        default_metadata_currency="RUB" if profile is None or profile.target_id == _LEGACY_TARGET_ID else None,
     )
     vin_match = _VIN.search(clean_text)
     vin = vin_match.group(1).upper() if vin_match else None
