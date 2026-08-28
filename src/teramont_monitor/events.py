@@ -70,6 +70,17 @@ def apply_scan(
             known.add(event.id)
 
     for source, result in source_results.items():
+        for warning in result.warnings:
+            history.append(
+                {
+                    "type": "source_gap",
+                    "observed_at": observed_at,
+                    "source": source,
+                    "code": warning.code,
+                    "message": warning.message,
+                    "search_url": result.search_url,
+                }
+            )
         if not result.ok:
             gap = result.gap
             history.append(

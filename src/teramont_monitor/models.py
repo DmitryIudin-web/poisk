@@ -78,6 +78,7 @@ class SourceResult:
     listings: tuple[Listing, ...] = ()
     gap: SourceGap | None = None
     search_url: str | None = None
+    warnings: tuple[SourceGap, ...] = ()
 
 
 @dataclass(frozen=True)

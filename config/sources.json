@@ -1,0 +1,61 @@
+{
+  "user_agent": "TeramontMonitor/0.1 (+https://github.com/DmitryIudin-web/poisk)",
+  "timeout_seconds": 25,
+  "sources": [
+    {
+      "name": "autoru",
+      "search_url": "https://auto.ru/cars/volkswagen/teramont/all/?year_from=2026&year_to=2026",
+      "allowed_hosts": ["auto.ru", "www.auto.ru"],
+      "listing_pattern": "https?://(?:www\\.)?auto\\.ru/cars/(?:new|used)/(?:group|sale)/volkswagen/teramont/(?:[^\\s\\\"'<>]+/)*(?P<id>\\d+-[0-9a-f]+)",
+      "url_terms": ["teramont"],
+      "max_details": 25,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "нет объявлений"],
+      "blocked_markers": ["доступ ограничен", "подтвердите, что вы не робот", "captcha"]
+    },
+    {
+      "name": "drom",
+      "search_url": "https://auto.drom.ru/volkswagen/teramont/?minyear=2026&maxyear=2026",
+      "allowed_hosts": ["auto.drom.ru"],
+      "listing_pattern": "https?://auto\\.drom\\.ru/(?:[^/]+/)?volkswagen/teramont/(?P<id>\\d+)\\.html",
+      "url_terms": ["teramont"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "нет объявлений", "объявлений не найдено"],
+      "blocked_markers": ["доступ ограничен", "подтвердите, что вы не робот", "captcha"]
+    },
+    {
+      "name": "avito",
+      "search_url": "https://www.avito.ru/all/avtomobili?q=volkswagen%20teramont%20pro%202026",
+      "allowed_hosts": ["avito.ru", "www.avito.ru", "m.avito.ru"],
+      "listing_pattern": "https?://(?:www\\.|m\\.)?avito\\.ru/[^/]+/avtomobili/[^?#\\\"']+_(?P<id>\\d{6,})",
+      "url_terms": ["teramont_pro"],
+      "max_details": 30,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "объявлений не найдено"],
+      "blocked_markers": ["доступ ограничен", "captcha", "проверяем, что вы не робот"]
+    },
+    {
+      "name": "mashina",
+      "search_url": "https://m.mashina.kg/catalog/passenger?q=Volkswagen%20Teramont%20Pro",
+      "allowed_hosts": ["m.mashina.kg", "mashina.kg"],
+      "listing_pattern": "https?://m\\.mashina\\.kg/details/volkswagen-teramont(?:-pro)?-(?P<id>[0-9a-f]{24})",
+      "url_terms": ["volkswagen-teramont"],
+      "max_details": 10,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "объявления не найдены"],
+      "blocked_markers": ["доступ ограничен", "captcha"]
+    },
+    {
+      "name": "kolesa",
+      "search_url": "https://kolesa.kz/cars/volkswagen/teramont/",
+      "allowed_hosts": ["kolesa.kz", "www.kolesa.kz"],
+      "listing_pattern": "https?://(?:www\\.)?kolesa\\.kz/a/show/(?P<id>\\d+)",
+      "url_terms": [],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "объявлений не найдено"],
+      "blocked_markers": ["доступ ограничен", "captcha", "проверка браузера"]
+    }
+  ]
+}

@@ -393,7 +393,7 @@ Expected: each source reports `ok` with a discovered count or a specific `source
 
 - [ ] **Step 5: Run complete deterministic verification**
 
-Run: `python -m unittest discover -s tests -v`
+Run: `python -m unittest discover -s tests -t . -v`
 Expected: all tests PASS with zero failures/errors.
 
 Run: `python -m compileall -q src tests`
