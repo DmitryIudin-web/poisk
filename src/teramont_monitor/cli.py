@@ -10,9 +10,13 @@ from pathlib import Path
 from typing import Mapping
 
 from .events import apply_scan
+from .profiles import load_target_profile
 from .sources import Fetcher, load_source_configs, scan_all
 from .storage import append_history, load_pending, load_state, save_pending, save_state
 from .telegram import TelegramError, send_pending
+
+
+DEFAULT_TARGET = "config/targets/teramont-pro-2026.json"
 
 
 @dataclass(frozen=True)
@@ -60,17 +64,19 @@ def collect(
     config_path: str | Path,
     state_dir: str | Path,
     *,
+    target_path: str | Path = DEFAULT_TARGET,
     fetcher: Fetcher | None = None,
     dry_run: bool = False,
     observed_at: str | None = None,
 ) -> RunSummary:
     observed_at = observed_at or _now()
-    results = scan_all(load_source_configs(config_path), fetcher=fetcher)
+    profile = load_target_profile(target_path)
+    results = scan_all(load_source_configs(config_path), profile, fetcher=fetcher)
     root = Path(state_dir)
     state = load_state(root / "state.json")
     pending = load_pending(root / "pending-events.json")
     known = {event.id for event in pending}
-    next_state, events, history = apply_scan(state, results, observed_at, known_event_ids=known)
+    next_state, events, history = apply_scan(state, results, observed_at, profile, known_event_ids=known)
     summary = _summary(results, len(events))
     if dry_run:
         return summary
@@ -86,8 +92,14 @@ def collect(
     return summary
 
 
-def smoke(config_path: str | Path, *, fetcher: Fetcher | None = None) -> RunSummary:
-    results = scan_all(load_source_configs(config_path), fetcher=fetcher)
+def smoke(
+    config_path: str | Path,
+    *,
+    target_path: str | Path = DEFAULT_TARGET,
+    fetcher: Fetcher | None = None,
+) -> RunSummary:
+    profile = load_target_profile(target_path)
+    results = scan_all(load_source_configs(config_path), profile, fetcher=fetcher)
     return _summary(results)
 
 
@@ -97,11 +109,13 @@ def _parser() -> argparse.ArgumentParser:
     collect_command = commands.add_parser("collect", help="scan sources and persist state")
     collect_command.add_argument("--config", default="config/sources.json")
     collect_command.add_argument("--state-dir", required=True)
+    collect_command.add_argument("--target", default=DEFAULT_TARGET)
     collect_command.add_argument("--dry-run", action="store_true")
     notify_command = commands.add_parser("notify", help="deliver queued Telegram events")
     notify_command.add_argument("--state-dir", required=True)
     smoke_command = commands.add_parser("smoke", help="scan sources without persistence")
     smoke_command.add_argument("--config", default="config/sources.json")
+    smoke_command.add_argument("--target", default=DEFAULT_TARGET)
     smoke_command.add_argument("--dry-run", action="store_true", help="accepted for explicitness; smoke is always read-only")
     return parser
 
@@ -110,11 +124,11 @@ def main(argv: list[str] | None = None, *, environ: Mapping[str, str] | None = N
     args = _parser().parse_args(argv)
     environ = os.environ if environ is None else environ
     if args.command == "collect":
-        summary = collect(args.config, args.state_dir, dry_run=args.dry_run)
+        summary = collect(args.config, args.state_dir, target_path=args.target, dry_run=args.dry_run)
         print(json.dumps(asdict(summary), ensure_ascii=False, sort_keys=True))
         return summary.exit_code
     if args.command == "smoke":
-        summary = smoke(args.config)
+        summary = smoke(args.config, target_path=args.target)
         print(json.dumps(asdict(summary), ensure_ascii=False, sort_keys=True))
         return summary.exit_code
     token = environ.get("TELEGRAM_BOT_TOKEN", "")
