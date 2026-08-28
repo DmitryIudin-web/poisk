@@ -4,6 +4,8 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
+from typing import Mapping
 
 from .models import Evidence
 
@@ -22,8 +24,8 @@ class TargetProfile:
     max_mileage_km: int
     required_evidence: tuple[str, ...]
     lhd_required_regions: tuple[str, ...]
-    price_drop_thresholds: dict[str, int]
-    evidence_rules: dict[str, EvidenceRule]
+    price_drop_thresholds: Mapping[str, int]
+    evidence_rules: Mapping[str, EvidenceRule]
 
 
 def match_evidence(text: str, rule: EvidenceRule) -> Evidence:
@@ -51,6 +53,10 @@ def load_target_profile(path: str | Path) -> TargetProfile:
             for group in raw.get("positive_groups", ())
         )
         negative = tuple(str(pattern) for pattern in raw.get("negative_patterns", ()))
+        if str(name) in required and not any(
+            group and any(pattern.strip() for pattern in group) for group in positive
+        ):
+            raise ValueError(f"required evidence rule has no positive patterns: {name}")
         for pattern in (*negative, *(item for group in positive for item in group)):
             try:
                 re.compile(pattern, re.IGNORECASE)
@@ -84,8 +90,8 @@ def load_target_profile(path: str | Path) -> TargetProfile:
         lhd_required_regions=tuple(
             str(value) for value in payload.get("lhd_required_regions", ())
         ),
-        price_drop_thresholds=thresholds,
-        evidence_rules=rules,
+        price_drop_thresholds=MappingProxyType(thresholds),
+        evidence_rules=MappingProxyType(rules),
     )
     if not profile.target_id or profile.max_mileage_km < 0:
         raise ValueError("invalid target identity or mileage boundary")

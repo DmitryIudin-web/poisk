@@ -32,6 +32,13 @@ class TargetProfileTests(unittest.TestCase):
         )
         self.assertIs(evidence.value, False)
 
+    def test_loaded_profile_policy_is_deeply_immutable(self) -> None:
+        profile = load_target_profile(ROOT / "config/targets/teramont-pro-2026.json")
+        with self.assertRaises(TypeError):
+            profile.price_drop_thresholds["RUB"] = 1
+        with self.assertRaises(TypeError):
+            profile.evidence_rules["other"] = profile.evidence_rules["model_match"]
+
     def test_loader_rejects_empty_required_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "invalid.json"
@@ -49,6 +56,14 @@ class TargetProfileTests(unittest.TestCase):
             self._load_modified(
                 evidence_rules={
                     "model_match": {"positive_groups": [["["]], "negative_patterns": []}
+                }
+            )
+
+    def test_loader_rejects_required_rule_without_positive_patterns(self) -> None:
+        with self.assertRaises(ValueError):
+            self._load_modified(
+                evidence_rules={
+                    "model_match": {"positive_groups": [], "negative_patterns": []}
                 }
             )
 
