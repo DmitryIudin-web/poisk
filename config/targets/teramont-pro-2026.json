@@ -4,12 +4,13 @@
   "year": 2026,
   "max_mileage_km": 1000,
   "required_evidence": ["model_match", "top_trim", "dcc"],
+  "allowed_regions": ["russia", "bishkek", "eaeu_other"],
   "lhd_required_regions": [],
   "price_drop_thresholds": {"RUB": 50000},
   "evidence_rules": {
     "model_match": {
       "positive_groups": [["(?:volkswagen\\s+)?teramont\\s*pro|терамонт\\s*про|途昂\\s*pro"]],
-      "negative_patterns": ["teramont(?!\\s*pro)|терамонт(?!\\s*про)"]
+      "negative_patterns": ["^(?![\\s\\S]*(?:(?:volkswagen\\s+)?teramont\\s*pro|терамонт\\s*про|途昂\\s*pro))[\\s\\S]*(?:teramont|терамонт)"]
     },
     "top_trim": {
       "positive_groups": [["\\bpeak\\b"], ["\\bsummit\\b"], ["максимальная комплектация|топовая комплектация|top trim|maximum trim"]],

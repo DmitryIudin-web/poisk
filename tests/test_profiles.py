@@ -15,8 +15,23 @@ class TargetProfileTests(unittest.TestCase):
             ROOT / "config/targets/range-rover-l460-d350-autobiography-2026.json"
         )
         self.assertEqual(teramont.target_id, "teramont-pro-2026")
+        self.assertEqual(teramont.year, 2026)
+        self.assertEqual(teramont.max_mileage_km, 1_000)
+        self.assertEqual(teramont.required_evidence, ("model_match", "top_trim", "dcc"))
+        self.assertEqual(
+            getattr(teramont, "allowed_regions", ()),
+            ("russia", "bishkek", "eaeu_other"),
+        )
         self.assertEqual(teramont.price_drop_thresholds, {"RUB": 50_000})
+        self.assertEqual(
+            range_rover.required_evidence,
+            ("model_match", "powertrain_match", "top_trim", "rear_seat_entertainment"),
+        )
         self.assertEqual(range_rover.max_mileage_km, 1_000)
+        self.assertEqual(
+            getattr(range_rover, "allowed_regions", ()),
+            ("russia", "kyrgyzstan", "georgia", "europe"),
+        )
         self.assertEqual(range_rover.lhd_required_regions, ("europe",))
         self.assertEqual(
             range_rover.price_drop_thresholds,

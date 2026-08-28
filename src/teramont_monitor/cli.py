@@ -101,8 +101,8 @@ def collect(
     merged = [*pending]
     pending_ids = {event.id for event in pending}
     merged.extend(event for event in events if event.id not in pending_ids)
-    save_state(root / "state.json", next_state)
     save_pending(root / "pending-events.json", merged)
+    save_state(root / "state.json", next_state)
     return summary
 
 

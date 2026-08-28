@@ -4,6 +4,7 @@
   "year": 2026,
   "max_mileage_km": 1000,
   "required_evidence": ["model_match", "powertrain_match", "top_trim", "rear_seat_entertainment"],
+  "allowed_regions": ["russia", "kyrgyzstan", "georgia", "europe"],
   "lhd_required_regions": ["europe"],
   "price_drop_thresholds": {"RUB": 100000, "EUR": 1000, "GEL": 3000, "KGS": 100000},
   "evidence_rules": {
@@ -24,7 +25,16 @@
     },
     "rear_seat_entertainment": {
       "positive_groups": [["rear seat entertainment|\\brse\\b|fond[- ]tv|fond entertainment|multimediasystem im fond|задн(?:ие|их) мультимедийн(?:ые|ых) экран|монитор(?:ы|а) для задних пассажиров"]],
-      "negative_patterns": ["no rear seat entertainment|entfall multimediasystem im fond|без задних монитор|aftermarket (?:tablet|screen)|нештатн(?:ый|ые) (?:планшет|монитор)"]
+      "negative_patterns": [
+        "no rear seat entertainment|entfall multimediasystem im fond|без задних монитор",
+        "(?:aftermarket|non[- ]factory|retrofit(?:ted)?|removable|abnehmbar\\w*|nachgerüstet|nachrüstung).{0,40}?(?:tablet|screen|display|monitor|rear seat entertainment|rse)",
+        "(?:tablet|screen|display|monitor).{0,40}?(?:aftermarket|non[- ]factory|retrofit(?:ted)?|removable|abnehmbar\\w*|nachgerüstet|nachrüstung)",
+        "(?:headrest|kopfstütz\\w*|подголовник\\w*).{0,40}?(?:tablet|screen|display|monitor|экран|планшет)",
+        "(?:tablet|screen|display|monitor|экран|планшет).{0,40}?(?:headrest|kopfstütz\\w*|подголовник\\w*)",
+        "(?:rear seat entertainment|\\brse\\b|fond[- ]tv|fond entertainment).{0,40}?(?:tablet|планшет)",
+        "(?:tablet|планшет).{0,40}?(?:rear seat entertainment|\\brse\\b|fond[- ]tv|fond entertainment)",
+        "нештатн\\w*.{0,40}?(?:планшет|монитор|экран)"
+      ]
     },
     "steering_left": {
       "positive_groups": [["left[- ]hand drive|\\blhd\\b|left steering|steering\\s*:?\\s*left|левый руль|руль слева|linkslenker"]],

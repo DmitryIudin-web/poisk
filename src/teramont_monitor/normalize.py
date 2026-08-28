@@ -12,7 +12,10 @@ _SPACE = re.compile(r"\s+")
 _VIN = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b", re.IGNORECASE)
 _EMAIL = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 _PHONE_CANDIDATE = re.compile(r"\+?\d[\d\s().-]{7,}\d")
-_MILEAGE = re.compile(r"(?:пробег|mileage)\D{0,18}([\d\s\u00a0]{1,12})\s*(?:км|km)\b", re.IGNORECASE)
+_MILEAGE = re.compile(
+    r"(?:пробег|mileage|kilometerstand)\D{0,18}([\d\s\u00a0]{1,12})\s*(?:км|km)\b",
+    re.IGNORECASE,
+)
 _PRICE_AMOUNT = r"(?:\d{1,3}(?:[\s\u00a0,.]\d{3})+|\d{3,})"
 _MONEY = re.compile(
     rf"(?:(?P<prefix>€|eur|euro|₾|gel|lari|\$|usd|dollar)\s*(?P<prefix_amount>{_PRICE_AMOUNT})|(?P<suffix_amount>{_PRICE_AMOUNT})\s*(?P<suffix>₽|руб(?:\.|лей|ля)?|kgs|сом|₸|тенге|kzt|€|eur|euro|₾|gel|lari|\$|usd|dollar))",
@@ -29,8 +32,39 @@ _CASH_BEFORE = re.compile(
 )
 
 _BLACK = ("черн", "black", "schwarz", "ebony")
-_NEGATIVE_STOCK = ("в пути", "под заказ", "в поставке", "на подходе", "ожидается", "in transit")
-_POSITIVE_STOCK = ("физически в наличии", "в наличии", "в салоне", "на площадке", "in stock")
+_NEGATIVE_STOCK_PATTERNS = (
+    r"\bnot\s+(?:physically\s+)?in\s+stock\b",
+    r"\bavailable\s+to\s+order\b",
+    r"\bon\s+order\b",
+    r"\bin\s+transit\b",
+    r"\barriv(?:ing|al)\b",
+    r"\bnot\s+(?:immediately\s+)?available\b",
+    r"\bnicht\s+(?:sofort\s+)?verf[üu]gbar\b",
+    r"\bnicht\s+auf\s+lager\b",
+    r"\bauf\s+bestellung\b",
+    r"\bbestellfahrzeug\b",
+    r"\bim\s+zulauf\b",
+    r"\bне\s+(?:физически\s+)?в\s+наличии\b",
+    r"\bнет\s+в\s+наличии\b",
+    r"\bпод\s+заказ\b",
+    r"\bна\s+заказ\b",
+    r"\bв\s+пути\b",
+    r"\bв\s+поставке\b",
+    r"\bна\s+подходе\b",
+    r"\bожидается\b",
+    r"\bскоро\s+поступит\b",
+)
+_POSITIVE_STOCK_PATTERNS = (
+    r"\bphysically\s+in\s+stock\b",
+    r"\bin\s+stock\b",
+    r"\b(?:available\s+immediately|immediately\s+available)\b",
+    r"\bsofort\s+verf[üu]gbar\b",
+    r"\bauf\s+lager\b",
+    r"\bфизически\s+в\s+наличии\b",
+    r"\bв\s+наличии\b",
+    r"\bв\s+салоне\b",
+    r"\bна\s+площадке\b",
+)
 _SOLD = ("продан", "продано", "снят с продажи", "объявление снято", "sold")
 _LEGACY_TARGET_ID = "teramont-pro-2026"
 _LEGACY_TARGET_NAME = "Volkswagen Teramont Pro 2026"
@@ -63,6 +97,16 @@ def _boolean_evidence(text: str, positive: tuple[str, ...], negative: tuple[str,
     for marker in positive:
         if marker.casefold() in lowered:
             return Evidence(True, marker)
+    return Evidence(None, None)
+
+
+def _stock_evidence(text: str) -> Evidence:
+    for pattern in _NEGATIVE_STOCK_PATTERNS:
+        if match := re.search(pattern, text, re.IGNORECASE):
+            return Evidence(False, _excerpt(match.group(0)))
+    for pattern in _POSITIVE_STOCK_PATTERNS:
+        if match := re.search(pattern, text, re.IGNORECASE):
+            return Evidence(True, _excerpt(match.group(0)))
     return Evidence(None, None)
 
 
@@ -170,13 +214,29 @@ def _extract_model_year(text: str, metadata: Mapping[str, Any]) -> int | None:
     structured = metadata.get("model_year")
     if isinstance(structured, (int, float)) and not isinstance(structured, bool):
         return int(structured)
-    explicit = re.search(r"(?:model year|modelljahr|модельный год|год выпуска|year)\D{0,12}(20\d{2})", text, re.IGNORECASE)
-    if explicit:
-        return int(explicit.group(1))
-    if re.search(r"first registration|erstzulassung|первая регистрация", text, re.IGNORECASE):
-        return None
-    fallback = re.search(r"\b(20\d{2})\b", text)
-    return int(fallback.group(1)) if fallback else None
+    explicit_pattern = re.compile(
+        r"(?:model year|modelljahr|модельный год|год выпуска|year)\D{0,12}(20\d{2})",
+        re.IGNORECASE,
+    )
+    for explicit in explicit_pattern.finditer(text):
+        prefix = text[max(0, explicit.start() - 24):explicit.start()]
+        if not re.search(r"copyright", prefix, re.IGNORECASE):
+            return int(explicit.group(1))
+    vehicle = re.compile(
+        r"(?:\b(?:volkswagen\s+)?teramont\s*pro\b|терамонт\s*про|途昂\s*pro|"
+        r"\b(?:land\s+rover\s+)?range\s+rover\b|\bl460\b)"
+        r"(?P<context>[^.;|\n]{0,70}?)\b(?P<year>20\d{2})\b",
+        re.IGNORECASE,
+    )
+    for match in vehicle.finditer(text):
+        context = match.group("context")
+        if not re.search(
+            r"copyright|first registration|erstzulassung|первая регистрация",
+            context,
+            re.IGNORECASE,
+        ):
+            return int(match.group("year"))
+    return None
 
 
 def _extract_location(text: str, metadata: Mapping[str, Any]) -> str | None:
@@ -186,21 +246,46 @@ def _extract_location(text: str, metadata: Mapping[str, Any]) -> str | None:
     for place in (
         "Бишкек", "Алматы", "Астана", "Казахстан", "Кыргызстан", "Беларусь",
         "Армения", "Москва", "Санкт-Петербург", "Екатеринбург", "Самара",
-        "Казань", "Новосибирск", "Россия",
+        "Казань", "Новосибирск", "Россия", "Тбилиси", "Tbilisi", "Georgia",
+        "Грузия", "Deutschland", "Germany", "Berlin", "Frankfurt", "München",
+        "Munich", "Dubai", "United Arab Emirates", "UAE", "ОАЭ",
     ):
         if place.casefold() in text.casefold():
             return place
     return None
 
 
-def _region(source: str, location: str | None, text: str) -> str:
+def _region(
+    source: str,
+    location: str | None,
+    text: str,
+    source_market: str | None,
+    *,
+    legacy_regions: bool,
+) -> str:
     haystack = f"{location or ''} {text}".casefold()
-    if "бишкек" in haystack:
-        return "bishkek"
-    if any(marker in haystack for marker in ("кыргыз", "казахстан", "алматы", "астана", "беларус", "армени")):
+    if any(marker in haystack for marker in ("dubai", "united arab emirates", "uae", "оаэ")):
+        return "outside_approved_markets"
+    if any(marker in haystack for marker in ("бишкек", "кыргыз", "kyrgyz")):
+        return "bishkek" if legacy_regions else "kyrgyzstan"
+    if any(marker in haystack for marker in ("казахстан", "алматы", "астана", "беларус", "армени")):
         return "eaeu_other"
+    if any(marker in haystack for marker in ("тбилиси", "tbilisi", "georgia", "грузия")):
+        return "georgia"
+    if any(
+        marker in haystack
+        for marker in (
+            "deutschland", "germany", "berlin", "frankfurt", "münchen", "munich",
+            "france", "italy", "spain", "netherlands", "belgium", "austria", "poland",
+        )
+    ):
+        return "europe"
     if any(marker in haystack for marker in ("росси", "москва", "петербург", "екатеринбург", "самара", "казань", "новосибирск")):
         return "russia"
+    if location:
+        return "unknown"
+    if source_market in {"russia", "kyrgyzstan", "georgia", "europe"}:
+        return source_market
     if source in {"autoru", "drom", "avito"}:
         return "russia"
     return "unknown"
@@ -228,10 +313,20 @@ def normalize_listing(
         target_id = profile.target_id
         target_name = profile.display_name
     year = _extract_model_year(clean_text, metadata)
-    exterior = _color_evidence(clean_text, (r"цвет\s+кузова", r"кузов", r"exterior(?:\s+color)?"))
+    exterior = _color_evidence(
+        clean_text,
+        (r"цвет\s+кузова", r"кузов", r"exterior(?:\s+color)?", r"außenfarbe", r"aussenfarbe"),
+    )
     interior = _color_evidence(
         clean_text,
-        (r"цвет\s+салона", r"салон", r"интерьер", r"interior(?:\s+color)?"),
+        (
+            r"цвет\s+салона",
+            r"салон",
+            r"интерьер",
+            r"interior(?:\s+color)?",
+            r"innenausstattung",
+            r"innenfarbe",
+        ),
         primary_only=True,
     )
     powertrain_match = match_evidence(clean_text, profile.evidence_rules["powertrain_match"]) if profile is not None and "powertrain_match" in profile.evidence_rules else Evidence(None, None)
@@ -239,8 +334,15 @@ def normalize_listing(
     steering_left = match_evidence(clean_text, profile.evidence_rules["steering_left"]) if profile is not None and "steering_left" in profile.evidence_rules else Evidence(None, None)
     is_new = _boolean_evidence(clean_text, ("новый автомобиль", "новый", "без пробега", "brand new"), ("с пробегом", "used"))
     mileage_match = _MILEAGE.search(clean_text)
-    mileage = _parse_number(mileage_match.group(1)) if mileage_match else 0 if is_new.value is True else None
-    in_stock = _boolean_evidence(clean_text, _POSITIVE_STOCK, _NEGATIVE_STOCK)
+    infer_legacy_zero = is_new.value is True and (
+        profile is None or profile.target_id == _LEGACY_TARGET_ID
+    )
+    mileage = (
+        _parse_number(mileage_match.group(1))
+        if mileage_match
+        else 0 if infer_legacy_zero else None
+    )
+    in_stock = _stock_evidence(clean_text)
     sold = _boolean_evidence(clean_text, _SOLD)
     if sold.value is True:
         in_stock = Evidence(False, sold.source_text)
@@ -286,7 +388,14 @@ def normalize_listing(
         price_currency=currency,
         price_qualifier=qualifier,
         vin=vin,
-        region=market if market in {"russia", "kyrgyzstan", "georgia", "europe"} else _region(source, location, clean_text),
+        region=_region(
+            source,
+            location,
+            clean_text,
+            market,
+            legacy_regions=target_id == _LEGACY_TARGET_ID,
+        ),
+        source_market=market if market in {"russia", "kyrgyzstan", "georgia", "europe"} else "unknown",
         location=location,
         epts_status=epts,
         commercial_recycling_fee_status=recycling,

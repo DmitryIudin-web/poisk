@@ -37,6 +37,7 @@ class Listing:
     price_qualifier: str | None = None
     vin: str | None = None
     region: str = "unknown"
+    source_market: str = "unknown"
     location: str | None = None
     epts_status: str | None = None
     commercial_recycling_fee_status: str | None = None

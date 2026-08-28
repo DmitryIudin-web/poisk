@@ -9,13 +9,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: vehicle-marketplace-monitor
+  group: teramont-monitor
   cancel-in-progress: false
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 140
     env:
       PYTHONPATH: src
       STATE_DIR: /tmp/vehicle-monitor-${{ github.run_id }}

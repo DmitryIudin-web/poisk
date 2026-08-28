@@ -23,6 +23,7 @@ class TargetProfile:
     year: int
     max_mileage_km: int
     required_evidence: tuple[str, ...]
+    allowed_regions: tuple[str, ...]
     lhd_required_regions: tuple[str, ...]
     price_drop_thresholds: Mapping[str, int]
     evidence_rules: Mapping[str, EvidenceRule]
@@ -87,6 +88,7 @@ def load_target_profile(path: str | Path) -> TargetProfile:
         year=int(payload["year"]),
         max_mileage_km=int(payload["max_mileage_km"]),
         required_evidence=required,
+        allowed_regions=tuple(str(value) for value in payload.get("allowed_regions", ())),
         lhd_required_regions=tuple(
             str(value) for value in payload.get("lhd_required_regions", ())
         ),
