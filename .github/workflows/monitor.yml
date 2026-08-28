@@ -18,8 +18,8 @@ jobs:
     timeout-minutes: 25
     env:
       PYTHONPATH: src
-      STATE_DIR: ${{ runner.temp }}/monitor-state
-      SUMMARY_PATH: ${{ runner.temp }}/monitor-summary.json
+      STATE_DIR: /tmp/teramont-monitor-${{ github.run_id }}
+      SUMMARY_PATH: /tmp/teramont-summary-${{ github.run_id }}.json
 
     steps:
       - name: Check out monitor code
