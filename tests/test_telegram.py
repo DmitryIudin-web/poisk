@@ -6,10 +6,23 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from teramont_monitor.events import apply_scan
-from teramont_monitor.models import Event, MonitorState, SourceResult
+from teramont_monitor.models import Evidence, Event, MonitorState, SourceResult
 from teramont_monitor.storage import load_pending, load_state, save_pending, save_state
-from teramont_monitor.telegram import TelegramError, format_events, send_pending
+from teramont_monitor.digest import build_price_digest
+from teramont_monitor.profiles import load_target_profile
+from teramont_monitor.storage import save_price_digest
+from teramont_monitor.telegram import (
+    TelegramError,
+    format_events,
+    format_price_digest,
+    send_pending,
+    send_price_digest,
+)
 from tests.test_qualify import matching_listing, matching_range_rover
+
+
+ROOT = Path(__file__).resolve().parents[1]
+TERAMONT_PROFILE = load_target_profile(ROOT / "config/targets/teramont-pro-2026.json")
 
 
 def sample_event(kind: str = "price_drop") -> Event:
@@ -31,6 +44,81 @@ def sample_event(kind: str = "price_drop") -> Event:
 
 
 class TelegramTests(unittest.TestCase):
+    def test_price_digest_formats_confirmed_and_candidate_details(self) -> None:
+        confirmed = replace(
+            matching_listing(),
+            source="autoru",
+            title="Teramont Peak Москва",
+            cash_price=5_700_000,
+            price_currency="RUB",
+            location="Москва",
+            mileage_km=25,
+            vin="WVGZZZCA1RC000001",
+        )
+        candidate = replace(
+            matching_listing(),
+            source="drom",
+            title="Teramont candidate",
+            cash_price=5_500_000,
+            price_currency="RUB",
+            location="Казань",
+            dcc=Evidence(None, None),
+        )
+        digest = build_price_digest(
+            {
+                "autoru": SourceResult("autoru", True, (confirmed,)),
+                "drom": SourceResult("drom", True, (candidate,)),
+            },
+            TERAMONT_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+
+        text = format_price_digest(digest)
+
+        self.assertIn("Три минимальные цены", text)
+        self.assertIn("5 700 000 ₽", text)
+        self.assertIn("Москва", text)
+        self.assertIn("25 км", text)
+        self.assertIn("WVGZZZCA1RC000001", text)
+        self.assertIn("Кандидаты", text)
+        self.assertIn("5 500 000 ₽", text)
+        self.assertIn("не подтверждено: DCC", text)
+        self.assertNotIn("token", text)
+
+    def test_empty_price_digest_still_reports_no_confirmed_offers(self) -> None:
+        digest = build_price_digest(
+            {"autoru": SourceResult("autoru", True, ())},
+            TERAMONT_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+
+        text = format_price_digest(digest)
+
+        self.assertIn("Подтверждённых предложений нет", text)
+        self.assertIn("Кандидатов с подтверждённой наличной ценой нет", text)
+
+    def test_send_price_digest_delivers_one_report_without_event_state_changes(self) -> None:
+        digest = build_price_digest(
+            {"autoru": SourceResult("autoru", True, ())},
+            TERAMONT_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            save_price_digest(root / "price-digest.json", digest)
+            calls = []
+
+            delivered = send_price_digest(
+                root,
+                "bot-token",
+                "chat-id",
+                transport=lambda token, chat, text: calls.append((token, chat, text)),
+            )
+
+            self.assertEqual(delivered, 1)
+            self.assertEqual(len(calls), 1)
+            self.assertFalse((root / "state.json").exists())
+
     def test_range_rover_eur_price_drop_displays_target_market_currency_and_evidence(self) -> None:
         listing = replace(
             matching_range_rover(),

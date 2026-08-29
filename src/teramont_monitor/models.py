@@ -94,6 +94,63 @@ class SourceResult:
 
 
 @dataclass(frozen=True)
+class RankedOffer:
+    listing: Listing
+    status: str
+    missing: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "listing": self.listing.to_dict(),
+            "status": self.status,
+            "missing": list(self.missing),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "RankedOffer":
+        return cls(
+            listing=Listing.from_dict(data["listing"]),
+            status=str(data["status"]),
+            missing=tuple(str(value) for value in data.get("missing", ())),
+        )
+
+
+@dataclass(frozen=True)
+class PriceDigest:
+    target_id: str
+    target_name: str
+    observed_at: str
+    successful_sources: int
+    failed_sources: int
+    confirmed: tuple[RankedOffer, ...] = ()
+    candidates: tuple[RankedOffer, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "version": 1,
+            "target_id": self.target_id,
+            "target_name": self.target_name,
+            "observed_at": self.observed_at,
+            "successful_sources": self.successful_sources,
+            "failed_sources": self.failed_sources,
+            "confirmed": [item.to_dict() for item in self.confirmed],
+            "candidates": [item.to_dict() for item in self.candidates],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "PriceDigest":
+        return cls(
+            target_id=str(data["target_id"]),
+            target_name=str(data["target_name"]),
+            observed_at=str(data["observed_at"]),
+            successful_sources=int(data.get("successful_sources", 0)),
+            failed_sources=int(data.get("failed_sources", 0)),
+            confirmed=tuple(RankedOffer.from_dict(item) for item in data.get("confirmed", ())),
+            candidates=tuple(RankedOffer.from_dict(item) for item in data.get("candidates", ())),
+        )
+
+
+@dataclass(frozen=True)
 class Event:
     id: str
     kind: str

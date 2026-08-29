@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from .models import Event, MonitorState
+from .models import Event, MonitorState, PriceDigest
 
 
 def _read_json(path: Path, default: Any) -> Any:
@@ -41,6 +41,14 @@ def load_pending(path: str | Path) -> list[Event]:
 
 def save_pending(path: str | Path, events: Iterable[Event]) -> None:
     _write_json_atomic(Path(path), [event.to_dict() for event in events])
+
+
+def load_price_digest(path: str | Path) -> PriceDigest:
+    return PriceDigest.from_dict(_read_json(Path(path), {}))
+
+
+def save_price_digest(path: str | Path, digest: PriceDigest) -> None:
+    _write_json_atomic(Path(path), digest.to_dict())
 
 
 def append_history(path: str | Path, records: Iterable[dict[str, Any]]) -> None:

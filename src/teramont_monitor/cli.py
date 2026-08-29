@@ -9,11 +9,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Mapping
 
+from .digest import build_price_digest
 from .events import apply_scan
 from .profiles import load_target_profile
 from .sources import Fetcher, load_source_configs, scan_all
-from .storage import append_history, load_pending, load_state, save_pending, save_state
-from .telegram import TelegramError, send_pending
+from .storage import append_history, load_pending, load_state, save_pending, save_price_digest, save_state
+from .telegram import TelegramError, send_pending, send_price_digest
 
 
 DEFAULT_TARGET = "config/targets/teramont-pro-2026.json"
@@ -98,9 +99,11 @@ def collect(
         append_history(root / "history.jsonl", history)
     if not summary.successful_sources:
         return summary
+    digest = build_price_digest(results, profile, observed_at)
     merged = [*pending]
     pending_ids = {event.id for event in pending}
     merged.extend(event for event in events if event.id not in pending_ids)
+    save_price_digest(root / "price-digest.json", digest)
     save_pending(root / "pending-events.json", merged)
     save_state(root / "state.json", next_state)
     return summary
@@ -127,6 +130,8 @@ def _parser() -> argparse.ArgumentParser:
     collect_command.add_argument("--dry-run", action="store_true")
     notify_command = commands.add_parser("notify", help="deliver queued Telegram events")
     notify_command.add_argument("--state-dir", required=True)
+    digest_command = commands.add_parser("digest", help="deliver the latest Russian lowest-price report")
+    digest_command.add_argument("--state-dir", required=True)
     smoke_command = commands.add_parser("smoke", help="scan sources without persistence")
     smoke_command.add_argument("--config", default="config/sources.json")
     smoke_command.add_argument("--target", default=DEFAULT_TARGET)
@@ -151,7 +156,11 @@ def main(argv: list[str] | None = None, *, environ: Mapping[str, str] | None = N
         print("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required", file=sys.stderr)
         return 2
     try:
-        delivered = send_pending(args.state_dir, token, chat_id)
+        delivered = (
+            send_price_digest(args.state_dir, token, chat_id)
+            if args.command == "digest"
+            else send_pending(args.state_dir, token, chat_id)
+        )
     except TelegramError as error:
         print(str(error), file=sys.stderr)
         return 2
