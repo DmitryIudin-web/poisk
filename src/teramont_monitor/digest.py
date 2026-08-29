@@ -8,10 +8,15 @@ from .profiles import TargetProfile
 from .qualify import qualify
 
 
-def _eligible(offer: RankedOffer) -> bool:
+def _display_price(offer: RankedOffer) -> int | None:
+    listing = offer.listing
+    return listing.cash_price or listing.advertised_price
+
+
+def _confirmed_eligible(offer: RankedOffer) -> bool:
     listing = offer.listing
     return (
-        offer.status in {"relevant", "candidate"}
+        offer.status == "relevant"
         and listing.region == "russia"
         and listing.in_stock.value is True
         and listing.sold.value is not True
@@ -21,12 +26,35 @@ def _eligible(offer: RankedOffer) -> bool:
     )
 
 
+def _candidate_eligible(offer: RankedOffer) -> bool:
+    listing = offer.listing
+    price = _display_price(offer)
+    return (
+        offer.status in {"relevant", "candidate"}
+        and listing.region == "russia"
+        and listing.in_stock.value is not False
+        and listing.sold.value is not True
+        and price is not None
+        and price > 0
+        and listing.price_currency == "RUB"
+    )
+
+
+def _with_commercial_gaps(offer: RankedOffer) -> RankedOffer:
+    missing = list(offer.missing)
+    if offer.listing.in_stock.value is None and "in_stock" not in missing:
+        missing.append("in_stock")
+    if offer.listing.cash_price is None and "cash_price" not in missing:
+        missing.append("cash_price")
+    return RankedOffer(offer.listing, offer.status, tuple(missing))
+
+
 def _prefer(current: RankedOffer, incoming: RankedOffer) -> RankedOffer:
-    if current.status != incoming.status:
-        return current if current.status == "relevant" else incoming
-    current_price = current.listing.cash_price or 0
-    incoming_price = incoming.listing.cash_price or 0
-    return incoming if incoming_price < current_price else current
+    def preference(offer: RankedOffer) -> tuple[int, int]:
+        strictness = 0 if _confirmed_eligible(offer) else 1 if offer.status == "relevant" else 2
+        return strictness, _display_price(offer) or 0
+
+    return incoming if preference(incoming) < preference(current) else current
 
 
 def build_price_digest(
@@ -45,8 +73,8 @@ def build_price_digest(
             continue
         for listing in result.listings:
             status, missing = qualify(listing, profile)
-            offer = RankedOffer(listing=listing, status=status, missing=missing)
-            if not _eligible(offer):
+            offer = _with_commercial_gaps(RankedOffer(listing=listing, status=status, missing=missing))
+            if not _candidate_eligible(offer):
                 continue
             key = vehicle_key(listing)
             if key in by_vehicle:
@@ -55,18 +83,18 @@ def build_price_digest(
                 by_vehicle[key] = offer
 
     def sort_key(item: RankedOffer) -> tuple[int, str, str]:
-        return (item.listing.cash_price or 0, item.listing.title, item.listing.url)
+        return (_display_price(item) or 0, item.listing.title, item.listing.url)
 
     confirmed = tuple(sorted(
-        (item for item in by_vehicle.values() if item.status == "relevant"),
+        (item for item in by_vehicle.values() if _confirmed_eligible(item)),
         key=sort_key,
     )[:limit])
     candidates = ()
     if len(confirmed) < limit:
         candidates = tuple(sorted(
-            (item for item in by_vehicle.values() if item.status == "candidate"),
+            (item for item in by_vehicle.values() if not _confirmed_eligible(item)),
             key=sort_key,
-        )[:limit])
+        )[: limit - len(confirmed)])
 
     successful = sum(result.ok for result in results.values())
     return PriceDigest(

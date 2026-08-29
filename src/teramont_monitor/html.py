@@ -27,6 +27,7 @@ class _PageParser(HTMLParser):
         self.visible: list[str] = []
         self.meta: list[str] = []
         self.meta_title: str | None = None
+        self.meta_image: str | None = None
         self.jsonld: list[str] = []
         self.primary_visible: list[str] = []
         self._primary_depth = 0
@@ -44,6 +45,8 @@ class _PageParser(HTMLParser):
             meta_name = (attributes.get("name") or attributes.get("property") or "").casefold()
             if meta_name == "og:title":
                 self.meta_title = attributes["content"] or ""
+            elif meta_name in {"og:image", "twitter:image", "twitter:image:src"}:
+                self.meta_image = self.meta_image or attributes["content"] or None
             elif meta_name in {"description", "og:description"}:
                 self.meta.append(attributes["content"] or "")
         if tag == "script" and (attributes.get("type") or "").casefold() == "application/ld+json":
@@ -135,6 +138,18 @@ def _walk_json(value: Any, strings: list[str], metadata: dict[str, Any]) -> None
     locality = value.get("addressLocality")
     if locality:
         metadata.setdefault("location", str(locality))
+    image = value.get("image")
+    if "image_url" not in metadata:
+        if isinstance(image, str) and image.strip():
+            metadata["image_url"] = image.strip()
+        elif isinstance(image, list):
+            candidate = next((item.strip() for item in image if isinstance(item, str) and item.strip()), None)
+            if candidate:
+                metadata["image_url"] = candidate
+        elif isinstance(image, dict):
+            candidate = image.get("url") or image.get("contentUrl")
+            if isinstance(candidate, str) and candidate.strip():
+                metadata["image_url"] = candidate.strip()
     for item in value.values():
         _walk_json(item, strings, metadata)
 
@@ -146,6 +161,8 @@ def extract_detail(page_html: str) -> tuple[str, dict[str, Any]]:
     metadata: dict[str, Any] = {}
     if parser.meta_title:
         metadata["title"] = parser.meta_title
+    if parser.meta_image:
+        metadata["image_url"] = parser.meta_image
     structured_strings: list[str] = []
     for block in parser.jsonld:
         try:

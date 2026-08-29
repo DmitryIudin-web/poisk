@@ -35,6 +35,7 @@ class TelegramError(RuntimeError):
 
 
 Transport = Callable[[str, str, str], None]
+PhotoTransport = Callable[[str, str, str, str], None]
 
 MISSING_LABELS = {
     "model": "модель",
@@ -49,6 +50,7 @@ MISSING_LABELS = {
     "rear_seat_entertainment": "заводские задние экраны",
     "region": "регион",
     "steering_left": "левый руль",
+    "cash_price": "цена за наличные",
 }
 
 
@@ -122,20 +124,68 @@ def format_events(events: Iterable[Event]) -> str:
     return "\n\n".join(sections)
 
 
+def _evidence_label(value: bool | None, confirmed: str, missing: str) -> str:
+    if value is True:
+        return confirmed
+    if value is False:
+        return "не соответствует"
+    return missing
+
+
 def _format_ranked_offer(index: int, offer: RankedOffer) -> str:
     listing = offer.listing
-    price = _money(listing.cash_price, listing.price_currency) or "цена не подтверждена"
+    strict = (
+        offer.status == "relevant"
+        and listing.in_stock.value is True
+        and listing.cash_price is not None
+        and listing.price_currency == "RUB"
+    )
     lines = [
-        f'{index}. <b>{html.escape(price)}</b> — {html.escape(listing.title)}',
+        f'{index}. <b>{html.escape(listing.title)}</b>',
+        f"Статус: {'подтверждённое предложение' if strict else 'требует проверки'}",
         f"Город: {html.escape(listing.location or 'не указан')}",
+        f"Регион: {html.escape(REGION_LABELS.get(listing.region, REGION_LABELS['unknown']))}",
+        f"Год: {listing.year if listing.year is not None else 'не подтверждён'}",
         f"Пробег: {listing.mileage_km:,} км".replace(",", " ") if listing.mileage_km is not None else "Пробег: не подтверждён",
-        f"Источник: {html.escape(listing.source)}",
+        f"Наличие: {_evidence_label(listing.in_stock.value, 'подтверждено', 'не подтверждено')}",
+        f"Кузов: {_evidence_label(listing.exterior_black.value, 'чёрный', 'цвет не подтверждён')}",
+        f"Салон: {_evidence_label(listing.interior_black.value, 'чёрный', 'цвет не подтверждён')}",
     ]
+    if listing.target_id == "teramont-pro-2026":
+        lines.extend(
+            (
+                f"Комплектация Peak/Summit: {_evidence_label(listing.top_trim.value, 'подтверждена', 'не подтверждена')}",
+                f"DCC: {_evidence_label(listing.dcc.value, 'подтверждена', 'не подтверждена')}",
+            )
+        )
+    else:
+        lines.extend(
+            (
+                f"Комплектация Autobiography: {_evidence_label(listing.top_trim.value, 'подтверждена', 'не подтверждена')}",
+                f"Двигатель D350: {_evidence_label(listing.powertrain_match.value, 'подтверждён', 'не подтверждён')}",
+                f"Заводские мониторы для пассажиров: {_evidence_label(listing.rear_seat_entertainment.value, 'подтверждены', 'не подтверждены')}",
+            )
+        )
+    cash = _money(listing.cash_price, listing.price_currency)
+    advertised = _money(listing.advertised_price, listing.price_currency)
+    if cash:
+        lines.append(f"Цена за наличные: <b>{html.escape(cash)}</b>")
+    elif advertised:
+        lines.append(f"Цена из объявления: <b>{html.escape(advertised)}</b> — условия оплаты не подтверждены")
+    else:
+        lines.append("Цена: не указана")
+    lines.append(f"Источник: {html.escape(listing.source)}")
     if listing.vin:
         lines.append(f"VIN: <code>{html.escape(listing.vin)}</code>")
+    if listing.epts_status:
+        lines.append(f"ЭПТС: {html.escape(listing.epts_status)}")
+    if listing.commercial_recycling_fee_status:
+        lines.append(f"Коммерческий утильсбор: {html.escape(listing.commercial_recycling_fee_status)}")
     if offer.missing:
         missing = ", ".join(MISSING_LABELS.get(value, value) for value in offer.missing)
         lines.append(f"не подтверждено: {html.escape(missing)}")
+    if not listing.image_url:
+        lines.append("Фото: доступно по ссылке на объявление")
     lines.append(f'<a href="{html.escape(listing.url, quote=True)}">Открыть объявление</a>')
     return "\n".join(lines)
 
@@ -157,7 +207,7 @@ def format_price_digest(digest: PriceDigest) -> str:
         if digest.candidates:
             lines.extend(_format_ranked_offer(index, offer) for index, offer in enumerate(digest.candidates, 1))
         else:
-            lines.append("Кандидатов с подтверждённой наличной ценой нет")
+            lines.append("Кандидатов с ценой из объявления нет")
     return "\n\n".join(part for part in lines if part != "")
 
 
@@ -172,6 +222,19 @@ def _telegram_transport(token: str, chat_id: str, text: str) -> None:
         raise TelegramError(f"Telegram delivery failed: {type(error).__name__}") from error
     if not payload.get("ok"):
         raise TelegramError("Telegram API rejected the message")
+
+
+def _telegram_photo_transport(token: str, chat_id: str, photo: str, caption: str) -> None:
+    endpoint = f"https://api.telegram.org/bot{quote(token, safe=':')}/sendPhoto"
+    body = urlencode({"chat_id": chat_id, "photo": photo, "caption": caption, "parse_mode": "HTML"}).encode("utf-8")
+    request = Request(endpoint, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"})
+    try:
+        with urlopen(request, timeout=20) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception as error:
+        raise TelegramError(f"Telegram photo delivery failed: {type(error).__name__}") from error
+    if not payload.get("ok"):
+        raise TelegramError("Telegram API rejected the photo")
 
 
 def send_pending(
@@ -208,6 +271,7 @@ def send_price_digest(
     chat_id: str,
     *,
     transport: Transport = _telegram_transport,
+    photo_transport: PhotoTransport = _telegram_photo_transport,
 ) -> int:
     if not token or not chat_id:
         raise TelegramError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required")
@@ -215,5 +279,25 @@ def send_price_digest(
         digest = load_price_digest(Path(state_dir) / "price-digest.json")
     except (FileNotFoundError, KeyError, TypeError, ValueError) as error:
         raise TelegramError("Fresh price digest is unavailable") from error
-    transport(token, chat_id, format_price_digest(digest))
-    return 1
+    offers = (*digest.confirmed, *digest.candidates)
+    if not offers:
+        transport(token, chat_id, format_price_digest(digest))
+        return 1
+    delivered = 0
+    for index, offer in enumerate(offers, 1):
+        card = "\n".join(
+            (
+                f"<b>{html.escape(digest.target_name)}</b>",
+                f"Источники: доступно {digest.successful_sources}, недоступно {digest.failed_sources}",
+                _format_ranked_offer(index, offer),
+            )
+        )
+        if offer.listing.image_url:
+            try:
+                photo_transport(token, chat_id, offer.listing.image_url, card)
+            except TelegramError:
+                transport(token, chat_id, card + "\nФото: доступно по ссылке на объявление")
+        else:
+            transport(token, chat_id, card)
+        delivered += 1
+    return delivered

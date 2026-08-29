@@ -23,6 +23,9 @@ from tests.test_qualify import matching_listing, matching_range_rover
 
 ROOT = Path(__file__).resolve().parents[1]
 TERAMONT_PROFILE = load_target_profile(ROOT / "config/targets/teramont-pro-2026.json")
+RANGE_ROVER_PROFILE = load_target_profile(
+    ROOT / "config/targets/range-rover-l460-d350-autobiography-2026.json"
+)
 
 
 def sample_event(kind: str = "price_drop") -> Event:
@@ -59,10 +62,12 @@ class TelegramTests(unittest.TestCase):
             matching_listing(),
             source="drom",
             title="Teramont candidate",
-            cash_price=5_500_000,
+            cash_price=None,
+            advertised_price=5_500_000,
             price_currency="RUB",
             location="Казань",
             dcc=Evidence(None, None),
+            image_url="https://cdn.example/teramont.jpg",
         )
         digest = build_price_digest(
             {
@@ -82,8 +87,146 @@ class TelegramTests(unittest.TestCase):
         self.assertIn("WVGZZZCA1RC000001", text)
         self.assertIn("Кандидаты", text)
         self.assertIn("5 500 000 ₽", text)
-        self.assertIn("не подтверждено: DCC", text)
+        self.assertIn("Цена из объявления", text)
+        self.assertIn("условия оплаты не подтверждены", text)
+        self.assertIn("Комплектация Peak/Summit: подтверждена", text)
+        self.assertIn("DCC: не подтверждена", text)
+        self.assertIn("Кузов: чёрный", text)
+        self.assertIn("Салон: чёрный", text)
+        self.assertIn("Статус: требует проверки", text)
+        self.assertIn("не подтверждено: DCC, цена за наличные", text)
+        self.assertIn("https://auto.drom.ru/moscow/volkswagen/teramont/1.html", text)
         self.assertNotIn("token", text)
+
+    def test_range_rover_vehicle_card_names_target_technical_characteristics(self) -> None:
+        listing = replace(
+            matching_range_rover(),
+            source="drom",
+            region="russia",
+            source_market="russia",
+            location="Москва",
+            cash_price=26_900_000,
+            advertised_price=26_900_000,
+            price_currency="RUB",
+        )
+        digest = build_price_digest(
+            {"drom": SourceResult("drom", True, (listing,))},
+            RANGE_ROVER_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+
+        text = format_price_digest(digest)
+
+        self.assertIn("Комплектация Autobiography: подтверждена", text)
+        self.assertIn("Двигатель D350: подтверждён", text)
+        self.assertIn("Заводские мониторы для пассажиров: подтверждены", text)
+        self.assertIn("Год: 2026", text)
+        self.assertIn("Пробег: 19 км", text)
+        self.assertIn("Цена за наличные: <b>26 900 000 ₽</b>", text)
+
+    def test_send_price_digest_sends_photo_card_with_specs_price_and_link(self) -> None:
+        listing = replace(
+            matching_listing(),
+            title="Volkswagen Teramont Pro Peak 2026",
+            cash_price=5_900_000,
+            advertised_price=5_900_000,
+            price_currency="RUB",
+            image_url="https://cdn.example/teramont-front.jpg",
+        )
+        digest = build_price_digest(
+            {"drom": SourceResult("drom", True, (listing,))},
+            TERAMONT_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            save_price_digest(root / "price-digest.json", digest)
+            text_calls = []
+            photo_calls = []
+
+            delivered = send_price_digest(
+                root,
+                "bot-token",
+                "chat-id",
+                transport=lambda token, chat, text: text_calls.append((token, chat, text)),
+                photo_transport=lambda token, chat, photo, caption: photo_calls.append(
+                    (token, chat, photo, caption)
+                ),
+            )
+
+        self.assertEqual(delivered, 1)
+        self.assertEqual(text_calls, [])
+        self.assertEqual(photo_calls[0][2], "https://cdn.example/teramont-front.jpg")
+        self.assertIn("Volkswagen Teramont Pro Peak 2026", photo_calls[0][3])
+        self.assertIn("Цена за наличные: <b>5 900 000 ₽</b>", photo_calls[0][3])
+        self.assertIn("Открыть объявление", photo_calls[0][3])
+
+    def test_send_price_digest_uses_text_card_when_photo_is_missing(self) -> None:
+        listing = replace(
+            matching_listing(),
+            cash_price=5_900_000,
+            advertised_price=5_900_000,
+            price_currency="RUB",
+            image_url=None,
+        )
+        digest = build_price_digest(
+            {"drom": SourceResult("drom", True, (listing,))},
+            TERAMONT_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            save_price_digest(root / "price-digest.json", digest)
+            text_calls = []
+            photo_calls = []
+
+            delivered = send_price_digest(
+                root,
+                "bot-token",
+                "chat-id",
+                transport=lambda token, chat, text: text_calls.append((token, chat, text)),
+                photo_transport=lambda token, chat, photo, caption: photo_calls.append(
+                    (token, chat, photo, caption)
+                ),
+            )
+
+        self.assertEqual(delivered, 1)
+        self.assertEqual(len(text_calls), 1)
+        self.assertEqual(photo_calls, [])
+        self.assertIn("Фото: доступно по ссылке на объявление", text_calls[0][2])
+
+    def test_send_price_digest_falls_back_to_text_when_telegram_rejects_photo(self) -> None:
+        listing = replace(
+            matching_listing(),
+            cash_price=5_900_000,
+            advertised_price=5_900_000,
+            price_currency="RUB",
+            image_url="https://cdn.example/blocked-photo.jpg",
+        )
+        digest = build_price_digest(
+            {"drom": SourceResult("drom", True, (listing,))},
+            TERAMONT_PROFILE,
+            "2026-08-29T09:00:00Z",
+        )
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            save_price_digest(root / "price-digest.json", digest)
+            text_calls = []
+
+            def reject_photo(_token: str, _chat: str, _photo: str, _caption: str) -> None:
+                raise TelegramError("photo rejected")
+
+            delivered = send_price_digest(
+                root,
+                "bot-token",
+                "chat-id",
+                transport=lambda token, chat, text: text_calls.append((token, chat, text)),
+                photo_transport=reject_photo,
+            )
+
+        self.assertEqual(delivered, 1)
+        self.assertEqual(len(text_calls), 1)
+        self.assertIn("Фото: доступно по ссылке на объявление", text_calls[0][2])
 
     def test_empty_price_digest_still_reports_no_confirmed_offers(self) -> None:
         digest = build_price_digest(
@@ -95,7 +238,7 @@ class TelegramTests(unittest.TestCase):
         text = format_price_digest(digest)
 
         self.assertIn("Подтверждённых предложений нет", text)
-        self.assertIn("Кандидатов с подтверждённой наличной ценой нет", text)
+        self.assertIn("Кандидатов с ценой из объявления нет", text)
 
     def test_send_price_digest_delivers_one_report_without_event_state_changes(self) -> None:
         digest = build_price_digest(

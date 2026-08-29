@@ -46,6 +46,7 @@ class Listing:
     powertrain_match: Evidence = field(default_factory=lambda: Evidence(None, None))
     rear_seat_entertainment: Evidence = field(default_factory=lambda: Evidence(None, None))
     steering_left: Evidence = field(default_factory=lambda: Evidence(None, None))
+    image_url: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
