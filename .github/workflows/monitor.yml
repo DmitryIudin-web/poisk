@@ -93,10 +93,27 @@ jobs:
           teramont_notify_status=$?
           python -m teramont_monitor notify --state-dir "$STATE_DIR/range-rover-d350"
           range_rover_notify_status=$?
+          if [ "${{ steps.collect.outputs.teramont_status }}" = "0" ]; then
+            python -m teramont_monitor digest --state-dir "$STATE_DIR"
+            teramont_digest_status=$?
+          else
+            teramont_digest_status=0
+          fi
+          if [ "${{ steps.collect.outputs.range_rover_status }}" = "0" ]; then
+            python -m teramont_monitor digest --state-dir "$STATE_DIR/range-rover-d350"
+            range_rover_digest_status=$?
+          else
+            range_rover_digest_status=0
+          fi
           set -e
           echo "teramont_notify_status=$teramont_notify_status" >> "$GITHUB_OUTPUT"
           echo "range_rover_notify_status=$range_rover_notify_status" >> "$GITHUB_OUTPUT"
+          echo "teramont_digest_status=$teramont_digest_status" >> "$GITHUB_OUTPUT"
+          echo "range_rover_digest_status=$range_rover_digest_status" >> "$GITHUB_OUTPUT"
           if [ "$teramont_notify_status" != "0" ] || [ "$range_rover_notify_status" != "0" ]; then
+            exit 1
+          fi
+          if [ "$teramont_digest_status" != "0" ] || [ "$range_rover_digest_status" != "0" ]; then
             exit 1
           fi
 

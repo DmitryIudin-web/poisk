@@ -7,8 +7,8 @@ from pathlib import Path
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
-from .models import Event
-from .storage import load_pending, load_state, save_pending, save_state
+from .models import Event, PriceDigest, RankedOffer
+from .storage import load_pending, load_price_digest, load_state, save_pending, save_state
 
 
 ALLOWED_EVENT_KINDS = {
@@ -35,6 +35,21 @@ class TelegramError(RuntimeError):
 
 
 Transport = Callable[[str, str, str], None]
+
+MISSING_LABELS = {
+    "model": "модель",
+    "year": "год",
+    "exterior_black": "чёрный кузов",
+    "interior_black": "чёрный салон",
+    "top_trim": "максимальная комплектация",
+    "dcc": "DCC",
+    "mileage": "пробег",
+    "in_stock": "физическое наличие",
+    "powertrain_match": "D350",
+    "rear_seat_entertainment": "заводские задние экраны",
+    "region": "регион",
+    "steering_left": "левый руль",
+}
 
 
 def _money(value: int | None, currency: str | None) -> str | None:
@@ -107,6 +122,45 @@ def format_events(events: Iterable[Event]) -> str:
     return "\n\n".join(sections)
 
 
+def _format_ranked_offer(index: int, offer: RankedOffer) -> str:
+    listing = offer.listing
+    price = _money(listing.cash_price, listing.price_currency) or "цена не подтверждена"
+    lines = [
+        f'{index}. <b>{html.escape(price)}</b> — {html.escape(listing.title)}',
+        f"Город: {html.escape(listing.location or 'не указан')}",
+        f"Пробег: {listing.mileage_km:,} км".replace(",", " ") if listing.mileage_km is not None else "Пробег: не подтверждён",
+        f"Источник: {html.escape(listing.source)}",
+    ]
+    if listing.vin:
+        lines.append(f"VIN: <code>{html.escape(listing.vin)}</code>")
+    if offer.missing:
+        missing = ", ".join(MISSING_LABELS.get(value, value) for value in offer.missing)
+        lines.append(f"не подтверждено: {html.escape(missing)}")
+    lines.append(f'<a href="{html.escape(listing.url, quote=True)}">Открыть объявление</a>')
+    return "\n".join(lines)
+
+
+def format_price_digest(digest: PriceDigest) -> str:
+    lines = [
+        f"<b>Три минимальные цены — {html.escape(digest.target_name)}</b>",
+        "Россия · физически в наличии · цена без кредита и trade-in",
+        f"Источники: доступно {digest.successful_sources}, недоступно {digest.failed_sources}",
+        "",
+        "<b>Подтверждённые предложения</b>",
+    ]
+    if digest.confirmed:
+        lines.extend(_format_ranked_offer(index, offer) for index, offer in enumerate(digest.confirmed, 1))
+    else:
+        lines.append("Подтверждённых предложений нет")
+    if len(digest.confirmed) < 3:
+        lines.extend(("", "<b>Кандидаты</b>"))
+        if digest.candidates:
+            lines.extend(_format_ranked_offer(index, offer) for index, offer in enumerate(digest.candidates, 1))
+        else:
+            lines.append("Кандидатов с подтверждённой наличной ценой нет")
+    return "\n\n".join(part for part in lines if part != "")
+
+
 def _telegram_transport(token: str, chat_id: str, text: str) -> None:
     endpoint = f"https://api.telegram.org/bot{quote(token, safe=':')}/sendMessage"
     body = urlencode({"chat_id": chat_id, "text": text, "parse_mode": "HTML", "disable_web_page_preview": "true"}).encode("utf-8")
@@ -146,3 +200,20 @@ def send_pending(
         save_pending(pending_path, pending)
         delivered += 1
     return delivered
+
+
+def send_price_digest(
+    state_dir: str | Path,
+    token: str,
+    chat_id: str,
+    *,
+    transport: Transport = _telegram_transport,
+) -> int:
+    if not token or not chat_id:
+        raise TelegramError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required")
+    try:
+        digest = load_price_digest(Path(state_dir) / "price-digest.json")
+    except (FileNotFoundError, KeyError, TypeError, ValueError) as error:
+        raise TelegramError("Fresh price digest is unavailable") from error
+    transport(token, chat_id, format_price_digest(digest))
+    return 1

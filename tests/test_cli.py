@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from teramont_monitor.cli import RunSummary, collect, main, smoke
 from teramont_monitor.sources import load_source_configs
-from teramont_monitor.storage import load_pending, load_state
+from teramont_monitor.storage import load_pending, load_price_digest, load_state
 
 
 ROOT = Path(__file__).parents[1]
@@ -176,8 +176,10 @@ class CliTests(unittest.TestCase):
             self.assertEqual(summary.successful_sources, 5)
             self.assertEqual(summary.failed_sources, 0)
             self.assertTrue((state_dir / "history.jsonl").exists())
+            self.assertTrue((state_dir / "price-digest.json").exists())
             self.assertEqual(len(load_state(state_dir / "state.json").listings), 5)
             self.assertEqual(len(load_pending(state_dir / "pending-events.json")), 5)
+            self.assertEqual(load_price_digest(state_dir / "price-digest.json").target_id, "teramont-pro-2026")
 
     def test_dry_run_does_not_mutate_state(self) -> None:
         with TemporaryDirectory() as directory:
@@ -231,6 +233,16 @@ class CliTests(unittest.TestCase):
         with TemporaryDirectory() as directory:
             exit_code = main(["notify", "--state-dir", directory], environ={})
             self.assertEqual(exit_code, 2)
+
+    def test_digest_command_sends_the_latest_price_report(self) -> None:
+        with patch("teramont_monitor.cli.send_price_digest", return_value=1) as send:
+            exit_code = main(
+                ["digest", "--state-dir", "state"],
+                environ={"TELEGRAM_BOT_TOKEN": "token", "TELEGRAM_CHAT_ID": "chat"},
+            )
+
+        self.assertEqual(exit_code, 0)
+        send.assert_called_once_with("state", "token", "chat")
 
 
 if __name__ == "__main__":

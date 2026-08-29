@@ -53,6 +53,10 @@ class WorkflowContractTests(unittest.TestCase):
         range_rover_notify_at = text.index(
             "teramont_monitor notify", teramont_notify_at + 1
         )
+        teramont_digest_at = text.index("teramont_monitor digest")
+        range_rover_digest_at = text.index(
+            "teramont_monitor digest", teramont_digest_at + 1
+        )
         second_push_at = text.index("push origin HEAD:monitor-state", first_push_at + 1)
         self.assertLess(tests_at, teramont_collect_at)
         self.assertLess(tests_at, range_rover_collect_at)
@@ -61,7 +65,11 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertLess(first_push_at, teramont_notify_at)
         self.assertLess(first_push_at, range_rover_notify_at)
         self.assertLess(teramont_notify_at, range_rover_notify_at)
+        self.assertLess(range_rover_notify_at, teramont_digest_at)
+        self.assertLess(teramont_digest_at, range_rover_digest_at)
         self.assertLess(range_rover_notify_at, second_push_at)
+        self.assertIn('steps.collect.outputs.teramont_status', text[teramont_digest_at - 500:range_rover_digest_at + 500])
+        self.assertIn('steps.collect.outputs.range_rover_status', text[teramont_digest_at - 500:range_rover_digest_at + 500])
 
     def test_combined_failure_is_reported_only_after_delivery_state_is_persisted(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
