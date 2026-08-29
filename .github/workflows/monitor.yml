@@ -1,4 +1,4 @@
-name: Volkswagen Teramont Pro monitor
+name: Vehicle marketplace monitor
 
 on:
   schedule:
@@ -15,11 +15,11 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 140
     env:
       PYTHONPATH: src
-      STATE_DIR: /tmp/teramont-monitor-${{ github.run_id }}
-      SUMMARY_PATH: /tmp/teramont-summary-${{ github.run_id }}.json
+      STATE_DIR: /tmp/vehicle-monitor-${{ github.run_id }}
+      SUMMARY_DIR: /tmp/vehicle-monitor-summaries-${{ github.run_id }}
 
     steps:
       - name: Check out monitor code
@@ -48,7 +48,8 @@ jobs:
           fi
           git -C "$STATE_DIR" config user.name "github-actions[bot]"
           git -C "$STATE_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          touch "$STATE_DIR/history.jsonl"
+          mkdir -p "$STATE_DIR/range-rover-d350" "$SUMMARY_DIR"
+          touch "$STATE_DIR/history.jsonl" "$STATE_DIR/range-rover-d350/history.jsonl"
 
       - name: Collect marketplace observations
         id: collect
@@ -58,10 +59,17 @@ jobs:
           set -o pipefail
           python -m teramont_monitor collect \
             --config config/sources.json \
-            --state-dir "$STATE_DIR" | tee "$SUMMARY_PATH"
-          collect_status=${PIPESTATUS[0]}
+            --target config/targets/teramont-pro-2026.json \
+            --state-dir "$STATE_DIR" | tee "$SUMMARY_DIR/teramont-summary.json"
+          teramont_status=${PIPESTATUS[0]}
+          python -m teramont_monitor collect \
+            --config config/range-rover-sources.json \
+            --target config/targets/range-rover-l460-d350-autobiography-2026.json \
+            --state-dir "$STATE_DIR/range-rover-d350" | tee "$SUMMARY_DIR/range-rover-summary.json"
+          range_rover_status=${PIPESTATUS[0]}
           set -e
-          echo "collect_status=$collect_status" >> "$GITHUB_OUTPUT"
+          echo "teramont_status=$teramont_status" >> "$GITHUB_OUTPUT"
+          echo "range_rover_status=$range_rover_status" >> "$GITHUB_OUTPUT"
 
       - name: Persist observations and pending events
         shell: bash
@@ -73,31 +81,52 @@ jobs:
             git -C "$STATE_DIR" push origin HEAD:monitor-state
           fi
 
-      - name: Fail after persisting source gaps
-        if: steps.collect.outputs.collect_status != '0'
-        run: exit "${{ steps.collect.outputs.collect_status }}"
-
       - name: Deliver significant Telegram events
+        id: notify
+        shell: bash
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python -m teramont_monitor notify --state-dir "$STATE_DIR"
+        run: |
+          set +e
+          python -m teramont_monitor notify --state-dir "$STATE_DIR"
+          teramont_notify_status=$?
+          python -m teramont_monitor notify --state-dir "$STATE_DIR/range-rover-d350"
+          range_rover_notify_status=$?
+          set -e
+          echo "teramont_notify_status=$teramont_notify_status" >> "$GITHUB_OUTPUT"
+          echo "range_rover_notify_status=$range_rover_notify_status" >> "$GITHUB_OUTPUT"
+          if [ "$teramont_notify_status" != "0" ] || [ "$range_rover_notify_status" != "0" ]; then
+            exit 1
+          fi
 
       - name: Persist Telegram delivery state
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
-          git -C "$STATE_DIR" add -- state.json pending-events.json
+          git -C "$STATE_DIR" add -A -- .
           if ! git -C "$STATE_DIR" diff --cached --quiet; then
             git -C "$STATE_DIR" commit -m "state: confirm Telegram delivery $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
             git -C "$STATE_DIR" push origin HEAD:monitor-state
           fi
 
-      - name: Upload sanitized failure summary
+      - name: Fail after both target collections and delivery persistence
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.collect.outputs.teramont_status }}" != "0" ] || \
+             [ "${{ steps.collect.outputs.range_rover_status }}" != "0" ]; then
+            exit 2
+          fi
+
+      - name: Upload sanitized failure summaries
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: teramont-monitor-diagnostics-${{ github.run_id }}
-          path: ${{ env.SUMMARY_PATH }}
+          name: vehicle-monitor-diagnostics-${{ github.run_id }}
+          path: |
+            ${{ env.SUMMARY_DIR }}/teramont-summary.json
+            ${{ env.SUMMARY_DIR }}/range-rover-summary.json
           if-no-files-found: ignore
           retention-days: 14

@@ -1,0 +1,114 @@
+{
+  "user_agent": "Mozilla/5.0 (compatible; TeramontMonitor/0.1; +https://github.com/DmitryIudin-web/poisk)",
+  "timeout_seconds": 25,
+  "sources": [
+    {
+      "name": "autoru",
+      "market": "russia",
+      "search_url": "https://auto.ru/cars/land_rover/range_rover/all/?year_from=2026&year_to=2026",
+      "allowed_hosts": ["auto.ru", "www.auto.ru"],
+      "listing_pattern": "https?://(?:www\\.)?auto\\.ru/cars/(?:new|used)/(?:group|sale)/land_rover/range_rover/(?:[^\\s\\\"'<>]+/)*(?P<id>\\d+-[0-9a-f]+)",
+      "url_terms": ["range_rover"],
+      "max_details": 25,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "нет объявлений"],
+      "blocked_markers": ["доступ ограничен", "подтвердите, что вы не робот", "captcha"]
+    },
+    {
+      "name": "drom",
+      "market": "russia",
+      "search_url": "https://auto.drom.ru/land_rover/range_rover/?minyear=2026&maxyear=2026",
+      "allowed_hosts": ["auto.drom.ru"],
+      "listing_pattern": "https?://auto\\.drom\\.ru/(?:[^/]+/)?land_rover/range_rover/(?P<id>\\d+)\\.html",
+      "url_terms": ["range_rover"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "нет объявлений", "объявлений не найдено"],
+      "blocked_markers": ["доступ ограничен", "подтвердите, что вы не робот", "captcha"]
+    },
+    {
+      "name": "avito",
+      "market": "russia",
+      "search_url": "https://www.avito.ru/all/avtomobili?q=range%20rover%20d350%20autobiography%202026",
+      "allowed_hosts": ["avito.ru", "www.avito.ru", "m.avito.ru"],
+      "listing_pattern": "https?://(?:www\\.|m\\.)?avito\\.ru/[^/]+/avtomobili/[^?#\\\"']+_(?P<id>\\d{6,})",
+      "url_terms": ["range_rover"],
+      "max_details": 30,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "объявлений не найдено"],
+      "blocked_markers": ["доступ ограничен", "captcha", "проверяем, что вы не робот"]
+    },
+    {
+      "name": "mashina",
+      "market": "kyrgyzstan",
+      "search_url": "https://m.mashina.kg/catalog/passenger?q=Range%20Rover%20D350%20Autobiography",
+      "allowed_hosts": ["m.mashina.kg", "mashina.kg"],
+      "listing_pattern": "https?://m\\.mashina\\.kg/details/land-rover-range-rover-(?P<id>[0-9a-f]{24})",
+      "url_terms": ["land-rover-range-rover"],
+      "max_details": 10,
+      "delay_seconds": 0.25,
+      "empty_markers": ["ничего не найдено", "объявления не найдены"],
+      "blocked_markers": ["доступ ограничен", "captcha"]
+    },
+    {
+      "name": "myauto",
+      "market": "georgia",
+      "search_url": "https://www.myauto.ge/en/main",
+      "allowed_hosts": ["myauto.ge", "www.myauto.ge"],
+      "listing_pattern": "https?://(?:www\\.)?myauto\\.ge/(?:en|ka|ru)/pr/(?P<id>\\d+)/[^\\s\\\"'<>]+",
+      "url_terms": ["range-rover"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["nothing found", "აღარ მოიძებნა", "ничего не найдено"],
+      "blocked_markers": ["access denied", "captcha", "robot"]
+    },
+    {
+      "name": "landrover_georgia",
+      "market": "georgia",
+      "search_url": "https://www.landrover-georgia.com/shop/en/approved/range-rover/",
+      "allowed_hosts": ["www.landrover-georgia.com"],
+      "listing_pattern": "https?://www\\.landrover-georgia\\.com/shop/en/approved/range-rover/range-rover/(?P<id>[a-z0-9-]+)",
+      "url_terms": ["range-rover"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["no vehicles found", "nothing found"],
+      "blocked_markers": ["access denied", "captcha", "robot"]
+    },
+    {
+      "name": "autobridge",
+      "market": "georgia",
+      "search_url": "https://autobridge.ge/en/listings?make=land-rover&model=range-rover&yearFrom=2026&yearTo=2026",
+      "allowed_hosts": ["autobridge.ge", "www.autobridge.ge"],
+      "listing_pattern": "https?://autobridge\\.ge/en/listings/land-rover-range-rover-2026-(?P<id>[0-9a-f]{8})",
+      "url_terms": ["land-rover-range-rover"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["no listings found", "nothing found"],
+      "blocked_markers": ["access denied", "captcha", "robot"]
+    },
+    {
+      "name": "mobile_de",
+      "market": "europe",
+      "search_url": "https://suchen.mobile.de/auto/land-rover-range-rover-tageszulassung.html",
+      "allowed_hosts": ["suchen.mobile.de"],
+      "listing_pattern": "https?://suchen\\.mobile\\.de/fahrzeuge/details\\.html\\?id=(?P<id>\\d+)",
+      "url_terms": ["details.html"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["no vehicles found", "keine fahrzeuge gefunden"],
+      "blocked_markers": ["access denied", "captcha", "robot"]
+    },
+    {
+      "name": "autoscout24",
+      "market": "europe",
+      "search_url": "https://www.autoscout24.com/lst/land-rover/range-rover/ve_range-rover-d350?fregfrom=2026&fregto=2026&kmto=1000",
+      "allowed_hosts": ["autoscout24.com", "www.autoscout24.com"],
+      "listing_pattern": "https?://(?:www\\.)?autoscout24\\.com/offers/[^\\s\\\"'<>]+-(?P<id>[0-9a-f]{8}-[0-9a-f-]{27})",
+      "url_terms": ["range-rover"],
+      "max_details": 20,
+      "delay_seconds": 0.25,
+      "empty_markers": ["no results found", "no cars found"],
+      "blocked_markers": ["access denied", "captcha", "robot"]
+    }
+  ]
+}

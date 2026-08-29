@@ -9,7 +9,7 @@ from teramont_monitor.events import apply_scan
 from teramont_monitor.models import Event, MonitorState, SourceResult
 from teramont_monitor.storage import load_pending, load_state, save_pending, save_state
 from teramont_monitor.telegram import TelegramError, format_events, send_pending
-from tests.test_qualify import matching_listing
+from tests.test_qualify import matching_listing, matching_range_rover
 
 
 def sample_event(kind: str = "price_drop") -> Event:
@@ -31,6 +31,35 @@ def sample_event(kind: str = "price_drop") -> Event:
 
 
 class TelegramTests(unittest.TestCase):
+    def test_range_rover_eur_price_drop_displays_target_market_currency_and_evidence(self) -> None:
+        listing = replace(
+            matching_range_rover(),
+            cash_price=99_000,
+            price_currency="EUR",
+            region="europe",
+        )
+        event = Event(
+            id="rr-eur-drop-1000",
+            kind="price_drop",
+            listing_key="range-rover-l460-d350-autobiography-2026:autoscout24:1",
+            occurred_at="2026-08-28T12:00:00Z",
+            listing=listing,
+            detail={"old_price": 100_000, "new_price": 99_000, "drop": 1_000, "currency": "EUR"},
+        )
+
+        text = format_events([event])
+
+        self.assertIn("Range Rover L460 D350 Autobiography 2026", text)
+        self.assertIn("Европа", text)
+        self.assertIn("1 000 €", text)
+        self.assertIn("Factory RSE: confirmed", text)
+        self.assertIn("Left-hand drive: confirmed", text)
+        self.assertIn("event: rr-eur-drop-1000", text)
+        self.assertNotIn("bot-token", text)
+        self.assertNotIn("chat-id", text)
+        self.assertNotIn("@", text)
+        self.assertNotIn("+7", text)
+
     def test_formatter_contains_event_id_escapes_html_and_no_credentials(self) -> None:
         text = format_events([sample_event()])
         self.assertIn("Снижение цены", text)

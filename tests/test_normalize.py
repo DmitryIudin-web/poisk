@@ -1,12 +1,36 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from teramont_monitor.models import Listing
 from teramont_monitor.normalize import normalize_listing
+from teramont_monitor.profiles import load_target_profile
+
+
+ROOT = Path(__file__).resolve().parents[1]
+TERAMONT_PROFILE = load_target_profile(ROOT / "config/targets/teramont-pro-2026.json")
+RANGE_ROVER_PROFILE = load_target_profile(
+    ROOT / "config/targets/range-rover-l460-d350-autobiography-2026.json"
+)
 
 
 class NormalizeListingTests(unittest.TestCase):
+    def test_legacy_signature_preserves_teramont_evidence_and_target(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/legacy-signature.html",
+            "legacy-signature",
+            "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, в наличии",
+            {},
+        )
+
+        self.assertEqual(listing.target_id, "teramont-pro-2026")
+        self.assertEqual(listing.target_name, "Volkswagen Teramont Pro 2026")
+        self.assertIs(listing.model_match.value, True)
+        self.assertIs(listing.top_trim.value, True)
+        self.assertIs(listing.dcc.value, True)
+
     def test_normalizes_explicit_target_and_commercial_fields(self) -> None:
         listing = normalize_listing(
             source="drom",
@@ -20,6 +44,7 @@ class NormalizeListingTests(unittest.TestCase):
                 "ЭПТС действующий. Коммерческий утильсбор уплачен."
             ),
             metadata={},
+            profile=TERAMONT_PROFILE,
         )
 
         self.assertIsInstance(listing, Listing)
@@ -45,6 +70,7 @@ class NormalizeListingTests(unittest.TestCase):
             "2",
             "Volkswagen Teramont Pro 2026 Summit, цена 5 400 000 ₽ только при кредите и trade-in",
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertIsNone(listing.cash_price)
@@ -61,6 +87,7 @@ class NormalizeListingTests(unittest.TestCase):
                 "Полная цена за наличные 5 999 000 ₽."
             ),
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertEqual(listing.advertised_price, 5_400_000)
@@ -73,6 +100,7 @@ class NormalizeListingTests(unittest.TestCase):
             "21",
             "Volkswagen Teramont Pro 2026 Summit. За наличные 6 500 000 сом.",
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertEqual(listing.cash_price, 6_500_000)
@@ -85,6 +113,7 @@ class NormalizeListingTests(unittest.TestCase):
             "3",
             "Volkswagen Teramont Pro 2026, Бишкек, 6 500 000 сом",
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertIsNone(listing.exterior_black.value)
@@ -102,6 +131,7 @@ class NormalizeListingTests(unittest.TestCase):
             "4",
             "Volkswagen Teramont Pro 2026, black on black, Summit, DCC, новый, в наличии, Алматы",
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertTrue(listing.exterior_black.value)
@@ -116,11 +146,25 @@ class NormalizeListingTests(unittest.TestCase):
             "5-abc",
             "Volkswagen Teramont Pro 2026 Peak, цвет кузова белый",
             {"price": 6_100_000, "price_currency": "RUB", "location": "Москва"},
+            TERAMONT_PROFILE,
         )
 
         self.assertFalse(listing.exterior_black.value)
         self.assertEqual(listing.advertised_price, 6_100_000)
         self.assertIsNone(listing.cash_price)
+
+    def test_profile_metadata_price_without_currency_stays_unknown(self) -> None:
+        listing = normalize_listing(
+            "autobridge",
+            "https://example.test/unknown-currency",
+            "unknown-currency",
+            "Range Rover L460 D350 2026 Autobiography.",
+            {"price": 167_000},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertEqual(listing.advertised_price, 167_000)
+        self.assertIsNone(listing.price_currency)
 
     def test_negative_epts_and_recycling_fee_wording_is_not_misread_as_paid(self) -> None:
         listing = normalize_listing(
@@ -133,6 +177,7 @@ class NormalizeListingTests(unittest.TestCase):
                 "Коммерческий утильсбор не уплачен."
             ),
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertEqual(listing.epts_status, "missing")
@@ -145,6 +190,7 @@ class NormalizeListingTests(unittest.TestCase):
             "6",
             "Volkswagen Teramont Pro 2026 Peak, цвет кузова: черный, DCC, автомобиль в салоне",
             {},
+            TERAMONT_PROFILE,
         )
         self.assertIsNone(listing.interior_black.value)
 
@@ -158,6 +204,7 @@ class NormalizeListingTests(unittest.TestCase):
                 "пробег 10 км, в наличии. Телефон +7 999 123-45-67, seller@example.com"
             ),
             {},
+            TERAMONT_PROFILE,
         )
 
         self.assertIn("Volkswagen Teramont Pro", listing.title)
@@ -171,10 +218,179 @@ class NormalizeListingTests(unittest.TestCase):
             "8",
             "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, пробег 10 км, в наличии",
             {"title": "Teramont Pro +7 (999) 123-45-67 sales@example.com"},
+            TERAMONT_PROFILE,
         )
 
         self.assertNotIn("999", listing.title)
         self.assertNotIn("@", listing.title)
+
+    def test_normalizes_range_rover_profile_evidence_and_georgian_market(self) -> None:
+        listing = normalize_listing(
+            "autobridge",
+            "https://autobridge.ge/en/listings/range-rover-abc123",
+            "abc123",
+            "Range Rover L460 D350 2026 Autobiography. Exterior: Santorini Black. "
+            "Interior: Ebony Black. Mileage 19 km. In stock. Left hand drive. "
+            "Factory Rear Seat Entertainment with two rear screens.",
+            {"price": 167_000, "price_currency": "EUR", "location": "Tbilisi"},
+            RANGE_ROVER_PROFILE,
+            market="georgia",
+        )
+
+        self.assertEqual(listing.target_id, "range-rover-l460-d350-autobiography-2026")
+        self.assertIs(listing.powertrain_match.value, True)
+        self.assertIs(listing.rear_seat_entertainment.value, True)
+        self.assertIs(listing.steering_left.value, True)
+        self.assertEqual(listing.price_currency, "EUR")
+        self.assertEqual(listing.region, "georgia")
+
+    def test_profile_negative_evidence_wins_for_range_rover_variant(self) -> None:
+        listing = normalize_listing(
+            "mobile",
+            "https://suchen.mobile.de/fahrzeuge/details.html?id=1",
+            "1",
+            "Range Rover Sport D350 Autobiography 2026. Schwarz. "
+            "Entfall Multimediasystem im Fond. Rechtslenker. 10 km. Sofort verfügbar.",
+            {},
+            RANGE_ROVER_PROFILE,
+            market="europe",
+        )
+
+        self.assertIs(listing.model_match.value, False)
+        self.assertIs(listing.rear_seat_entertainment.value, False)
+        self.assertIs(listing.steering_left.value, False)
+
+    def test_legacy_state_defaults_missing_target_identity_to_teramont(self) -> None:
+        current = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/legacy.html",
+            "legacy",
+            "Volkswagen Teramont Pro 2026 Peak, black on black, DCC, в наличии",
+            {},
+            TERAMONT_PROFILE,
+        )
+        legacy = Listing.from_dict(current.to_dict() | {"target_id": None, "target_name": None})
+
+        self.assertEqual(legacy.target_id, "teramont-pro-2026")
+        self.assertEqual(legacy.target_name, "Volkswagen Teramont Pro 2026")
+
+    def test_gel_eur_and_usd_prices_keep_explicit_source_currency(self) -> None:
+        cases = (
+            ("Цена 450 000 ₾", "GEL"),
+            ("Price €167 000", "EUR"),
+            ("Price $167 000", "USD"),
+        )
+        for text, expected_currency in cases:
+            with self.subTest(text=text):
+                listing = normalize_listing(
+                    "autobridge",
+                    "https://example.test/currency",
+                    "currency",
+                    f"Range Rover L460 D350 2026 Autobiography. {text}",
+                    {},
+                    RANGE_ROVER_PROFILE,
+                )
+                self.assertEqual(listing.price_currency, expected_currency)
+
+    def test_sold_status_overrides_in_stock(self) -> None:
+        listing = normalize_listing(
+            "autobridge",
+            "https://example.test/sold",
+            "sold",
+            "Range Rover L460 D350 2026 Autobiography. In stock. Sold.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertIs(listing.sold.value, True)
+        self.assertIs(listing.in_stock.value, False)
+
+    def test_model_year_is_preferred_to_first_registration_year(self) -> None:
+        listing = normalize_listing(
+            "autobridge",
+            "https://example.test/year",
+            "year",
+            "Range Rover L460 D350. First registration 2025. Model Year 2026.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertEqual(listing.year, 2026)
+
+    def test_first_registration_without_model_year_leaves_year_unknown(self) -> None:
+        listing = normalize_listing(
+            "autobridge",
+            "https://example.test/year-unknown",
+            "year-unknown",
+            "Range Rover L460 D350. First registration 2025.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertIsNone(listing.year)
+
+    def test_modelljahr_is_preferred_to_erstzulassung(self) -> None:
+        listing = normalize_listing(
+            "mobile",
+            "https://example.test/modelljahr",
+            "modelljahr",
+            "Range Rover L460 D350. Erstzulassung 2025. Modelljahr 2026.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertEqual(listing.year, 2026)
+
+    def test_erstzulassung_without_modelljahr_leaves_year_unknown(self) -> None:
+        listing = normalize_listing(
+            "mobile",
+            "https://example.test/erstzulassung",
+            "erstzulassung",
+            "Range Rover L460 D350. Erstzulassung 2025.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertIsNone(listing.year)
+
+    def test_european_price_grouping_keeps_all_digits(self) -> None:
+        cases = (
+            ("Price €167,000", "EUR"),
+            ("Price 167.000 EUR", "EUR"),
+        )
+        for text, expected_currency in cases:
+            with self.subTest(text=text):
+                listing = normalize_listing(
+                    "autobridge",
+                    "https://example.test/european-price",
+                    "european-price",
+                    f"Range Rover L460 D350 2026 Autobiography. {text}",
+                    {},
+                    RANGE_ROVER_PROFILE,
+                )
+                self.assertEqual(listing.advertised_price, 167_000)
+                self.assertEqual(listing.price_currency, expected_currency)
+
+    def test_ebony_is_black_but_secondary_ebony_is_not_primary_black_interior(self) -> None:
+        ebony = normalize_listing(
+            "autobridge",
+            "https://example.test/ebony",
+            "ebony",
+            "Range Rover L460 D350. Interior: Ebony.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+        light_cloud = normalize_listing(
+            "autobridge",
+            "https://example.test/light-cloud",
+            "light-cloud",
+            "Range Rover L460 D350. Interior: Light Cloud/ebony.",
+            {},
+            RANGE_ROVER_PROFILE,
+        )
+
+        self.assertIs(ebony.interior_black.value, True)
+        self.assertIs(light_cloud.interior_black.value, False)
 
 
 if __name__ == "__main__":

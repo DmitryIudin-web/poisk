@@ -23,6 +23,9 @@ REGION_LABELS = {
     "russia": "Россия",
     "bishkek": "Бишкек",
     "eaeu_other": "Другой рынок ЕАЭС",
+    "kyrgyzstan": "Кыргызстан",
+    "georgia": "Грузия",
+    "europe": "Европа",
     "unknown": "Регион не подтверждён",
 }
 
@@ -37,7 +40,14 @@ Transport = Callable[[str, str, str], None]
 def _money(value: int | None, currency: str | None) -> str | None:
     if value is None:
         return None
-    suffix = {"RUB": "₽", "KGS": "сом", "KZT": "₸"}.get(currency or "", currency or "")
+    suffix = {
+        "RUB": "₽",
+        "KGS": "сом",
+        "KZT": "₸",
+        "EUR": "€",
+        "GEL": "₾",
+        "USD": "$",
+    }.get(currency or "", currency or "")
     return f"{value:,}".replace(",", " ") + (f" {suffix}" if suffix else "")
 
 
@@ -47,7 +57,9 @@ def _format_event(event: Event) -> str:
     listing = event.listing
     lines = [
         f"<b>{html.escape(ALLOWED_EVENT_KINDS[event.kind])}</b>",
+        html.escape(listing.target_name),
         html.escape(listing.title),
+        f"Рынок: {html.escape(REGION_LABELS.get(listing.region, REGION_LABELS['unknown']))}",
     ]
     price = _money(listing.cash_price, listing.price_currency)
     if price:
@@ -56,13 +68,17 @@ def _format_event(event: Event) -> str:
         advertised = _money(listing.advertised_price, listing.price_currency)
         lines.append(f"Заявленная цена: {html.escape(advertised or '')} ({html.escape(listing.price_qualifier or 'условия не подтверждены')})")
     if event.kind == "price_drop":
-        drop = _money(event.detail.get("drop"), "RUB")
+        drop = _money(event.detail.get("drop"), event.detail.get("currency") or listing.price_currency)
         if drop:
             lines.append(f"Снижение: <b>{html.escape(drop)}</b>")
     if event.kind == "critical_confirmation":
         confirmed = ", ".join(str(value) for value in event.detail.get("confirmed", ()))
         if confirmed:
             lines.append(f"Подтверждено: {html.escape(confirmed)}")
+    if listing.rear_seat_entertainment.value is True:
+        lines.append("Factory RSE: confirmed")
+    if listing.steering_left.value is True:
+        lines.append("Left-hand drive: confirmed")
     if listing.vin:
         lines.append(f"VIN: <code>{html.escape(listing.vin)}</code>")
     if listing.epts_status:

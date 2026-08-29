@@ -32,6 +32,46 @@ class StorageTests(unittest.TestCase):
             self.assertEqual(load_state(path), state)
             self.assertFalse(path.with_name("state.json.tmp").exists())
 
+    def test_pre_feature_teramont_listing_keys_survive_a_state_round_trip(self) -> None:
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "state.json"
+            listing = matching_listing()
+            legacy_listing = listing.to_dict()
+            legacy_listing.pop("target_id")
+            legacy_listing.pop("target_name")
+            legacy_listing.pop("powertrain_match")
+            legacy_listing.pop("rear_seat_entertainment")
+            legacy_listing.pop("steering_left")
+            path.write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "listings": {
+                            "drom:1": {
+                                "listing": legacy_listing,
+                                "status": "relevant",
+                                "missing": [],
+                                "misses": 0,
+                                "last_seen_at": "2026-08-28T11:00:00Z",
+                                "removed": False,
+                            }
+                        },
+                        "emitted_event_ids": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            state = load_state(path)
+            save_state(path, state)
+
+            persisted = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(set(persisted["listings"]), {"drom:1"})
+            self.assertEqual(
+                persisted["listings"]["drom:1"]["listing"]["target_id"],
+                "teramont-pro-2026",
+            )
+
     def test_pending_events_round_trip(self) -> None:
         with TemporaryDirectory() as directory:
             path = Path(directory) / "pending-events.json"

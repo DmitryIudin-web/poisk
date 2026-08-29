@@ -6,6 +6,7 @@ from typing import Any
 
 from .identity import listing_key, vehicle_key
 from .models import Event, Listing, ListingState, MonitorState, SourceResult
+from .profiles import TargetProfile
 from .qualify import qualify
 
 
@@ -53,6 +54,7 @@ def apply_scan(
     state: MonitorState,
     source_results: dict[str, SourceResult],
     observed_at: str,
+    profile: TargetProfile | None = None,
     *,
     known_event_ids: set[str] | None = None,
 ) -> tuple[MonitorState, list[Event], list[dict[str, Any]]]:
@@ -80,7 +82,7 @@ def apply_scan(
         if incoming is None:
             active_vehicle_keys.add(vehicle_key(listing_state.listing))
             continue
-        incoming_status, _ = qualify(incoming)
+        incoming_status, _ = qualify(incoming, profile)
         if incoming_status == "relevant" and incoming.sold.value is not True:
             active_vehicle_keys.add(vehicle_key(incoming))
 
@@ -118,7 +120,7 @@ def apply_scan(
         deduplicated = {listing_key(listing): listing for listing in result.listings}
         for key, current in deduplicated.items():
             seen_by_source[source].add(key)
-            status, missing = qualify(current)
+            status, missing = qualify(current, profile)
             previous_state = next_state.listings.get(key)
             history.append(
                 {
@@ -264,29 +266,39 @@ def apply_scan(
                 active_vehicle_keys.add(current_vehicle_key)
                 continue
 
+            currency = current.price_currency
+            threshold = (
+                profile.price_drop_thresholds.get(currency or "")
+                if profile is not None
+                else 50_000 if currency == "RUB" else None
+            )
             if (
-                previous.cash_price is not None
+                previous_state.status == "relevant"
+                and status == "relevant"
+                and threshold is not None
+                and previous.cash_price is not None
                 and current.cash_price is not None
-                and previous.price_currency == "RUB"
-                and current.price_currency == "RUB"
+                and previous.price_currency == currency
+                and previous.cash_price - current.cash_price >= threshold
             ):
                 drop = previous.cash_price - current.cash_price
-                if drop >= 50_000:
-                    emit(
-                        _make_event(
-                            "price_drop",
-                            key,
-                            observed_at,
-                            current,
-                            {
-                                "old_price": previous.cash_price,
-                                "new_price": current.cash_price,
-                                "drop": drop,
-                                "transition_anchor": previous_state.last_seen_at,
-                            },
-                            {"cash_price": previous.cash_price},
-                        )
+                emit(
+                    _make_event(
+                        "price_drop",
+                        key,
+                        observed_at,
+                        current,
+                        {
+                            "drop": drop,
+                            "currency": currency,
+                            "transition_anchor": previous_state.last_seen_at,
+                        },
+                        {
+                            "cash_price": previous.cash_price,
+                            "price_currency": previous.price_currency,
+                        },
                     )
+                )
 
             confirmed = _new_commercial_confirmations(previous, current)
             if confirmed and status in {"candidate", "relevant"}:
