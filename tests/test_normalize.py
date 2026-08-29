@@ -16,6 +16,55 @@ RANGE_ROVER_PROFILE = load_target_profile(
 
 
 class NormalizeListingTests(unittest.TestCase):
+    def test_title_price_and_relative_photo_are_available_for_vehicle_card(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/moscow/volkswagen/teramont/123.html",
+            "123",
+            "Volkswagen Teramont Pro 2026 Peak, black on black, DCC",
+            {
+                "title": "Продажа Volkswagen Teramont Pro 2026, 6&nbsp;600&nbsp;000 руб",
+                "price": 0,
+                "price_currency": "RUB",
+                "image_url": "/images/teramont-front.jpg",
+            },
+            TERAMONT_PROFILE,
+            market="russia",
+        )
+
+        self.assertEqual(listing.advertised_price, 6_600_000)
+        self.assertIsNone(listing.cash_price)
+        self.assertEqual(
+            listing.image_url,
+            "https://auto.drom.ru/images/teramont-front.jpg",
+        )
+
+    def test_non_http_photo_is_not_forwarded_to_telegram(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/moscow/volkswagen/teramont/123.html",
+            "123",
+            "Volkswagen Teramont Pro 2026 Peak, black on black, DCC",
+            {"image_url": "file:///etc/passwd"},
+            TERAMONT_PROFILE,
+            market="russia",
+        )
+
+        self.assertIsNone(listing.image_url)
+
+    def test_marketplace_logo_is_not_used_as_vehicle_photo(self) -> None:
+        listing = normalize_listing(
+            "drom",
+            "https://auto.drom.ru/moscow/volkswagen/teramont/123.html",
+            "123",
+            "Volkswagen Teramont Pro 2026 Peak, black on black, DCC",
+            {"image_url": "https://r1.drom.ru/images/og/drom-om.png"},
+            TERAMONT_PROFILE,
+            market="russia",
+        )
+
+        self.assertIsNone(listing.image_url)
+
     def test_legacy_signature_preserves_teramont_evidence_and_target(self) -> None:
         listing = normalize_listing(
             "drom",

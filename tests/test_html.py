@@ -81,6 +81,7 @@ class HtmlExtractionTests(unittest.TestCase):
     def test_extract_detail_combines_visible_text_meta_and_jsonld(self) -> None:
         html = """
         <html><head><meta name="description" content="Автомобиль в наличии">
+        <meta property="og:image" content="https://cdn.example/car-main.jpg">
         <script type="application/ld+json">{"name":"Volkswagen Teramont Pro 2026","offers":{"price":5999000,"priceCurrency":"RUB"}}</script>
         <script>SECRET_SHOULD_NOT_APPEAR</script></head>
         <body><h1>Peak, black on black, DCC</h1></body></html>
@@ -92,6 +93,19 @@ class HtmlExtractionTests(unittest.TestCase):
         self.assertEqual(metadata["title"], "Volkswagen Teramont Pro 2026")
         self.assertEqual(metadata["price"], 5_999_000)
         self.assertEqual(metadata["price_currency"], "RUB")
+        self.assertEqual(metadata["image_url"], "https://cdn.example/car-main.jpg")
+
+    def test_jsonld_image_is_used_when_open_graph_image_is_absent(self) -> None:
+        html = """
+        <script type="application/ld+json">
+        {"name":"Range Rover D350","image":["https://cdn.example/rr-front.jpg"]}
+        </script>
+        <main>Range Rover L460 D350 Autobiography 2026</main>
+        """
+
+        _, metadata = extract_detail(html)
+
+        self.assertEqual(metadata["image_url"], "https://cdn.example/rr-front.jpg")
 
     def test_primary_listing_content_excludes_related_cards_and_footer(self) -> None:
         html = """

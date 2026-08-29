@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import html as html_module
 import re
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import urljoin, urlsplit
 
 from .models import Evidence, Listing
 from .profiles import TargetProfile, match_evidence
@@ -71,7 +73,7 @@ _LEGACY_TARGET_NAME = "Volkswagen Teramont Pro 2026"
 
 
 def _clean(value: Any) -> str:
-    return _SPACE.sub(" ", str(value or "")).strip()
+    return _SPACE.sub(" ", html_module.unescape(str(value or ""))).strip()
 
 
 def _excerpt(value: str, limit: int = 120) -> str:
@@ -144,6 +146,22 @@ def _color_evidence(text: str, labels: tuple[str, ...], *, primary_only: bool = 
 def _parse_number(value: str) -> int | None:
     digits = re.sub(r"\D", "", value)
     return int(digits) if digits else None
+
+
+def _safe_image_url(value: Any, listing_url: str) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    candidate = urljoin(listing_url, value.strip())
+    parsed = urlsplit(candidate)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or len(candidate) > 2_048:
+        return None
+    lowered_path = parsed.path.casefold()
+    if any(
+        marker in lowered_path
+        for marker in ("placeholder", "no-image", "no_image", "no-photo", "nophoto", "/images/og/drom-om.")
+    ):
+        return None
+    return candidate
 
 
 def _extract_price(
@@ -356,8 +374,9 @@ def normalize_listing(
     sold = _boolean_evidence(clean_text, _SOLD)
     if sold.value is True:
         in_stock = Evidence(False, sold.source_text)
+    price_text = " | ".join(part for part in (_clean(metadata.get("title")), clean_text) if part)
     cash_price, advertised_price, currency, qualifier = _extract_price(
-        clean_text,
+        price_text,
         metadata,
         default_metadata_currency="RUB" if profile is None or profile.target_id == _LEGACY_TARGET_ID else None,
     )
@@ -415,4 +434,5 @@ def normalize_listing(
         powertrain_match=powertrain_match,
         rear_seat_entertainment=rear_seat_entertainment,
         steering_left=steering_left,
+        image_url=_safe_image_url(metadata.get("image_url"), url),
     )

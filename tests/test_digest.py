@@ -61,18 +61,24 @@ class PriceDigestTests(unittest.TestCase):
         self.assertEqual([item.listing.cash_price for item in digest.confirmed], [5_700_000, 5_800_000, 5_900_000])
         self.assertEqual(digest.candidates, ())
 
-    def test_candidates_fill_a_separate_list_without_weakening_cash_stock_or_region_rules(self) -> None:
+    def test_candidates_fill_remaining_cards_with_advertised_prices_and_clear_gaps(self) -> None:
         listings = (
             offer("confirmed", 5_900_000, vin="CONFIRMEDVIN00001"),
             offer("same-vin-candidate", 5_100_000, vin="CONFIRMEDVIN00001", candidate=True),
-            offer("candidate-1", 5_300_000, candidate=True),
-            offer("candidate-2", 5_500_000, candidate=True),
+            offer(
+                "candidate-1",
+                5_300_000,
+                candidate=True,
+                cash_price=None,
+                in_stock=Evidence(None, None),
+            ),
+            offer("candidate-2", 5_500_000, candidate=True, cash_price=None),
             offer("candidate-3", 5_700_000, candidate=True),
             offer("candidate-4", 5_800_000, candidate=True),
             offer("not-russia", 4_000_000, candidate=True, region="georgia"),
             offer("not-stock", 4_100_000, candidate=True, in_stock=Evidence(False, "в пути")),
             offer("not-rub", 50_000, candidate=True, price_currency="EUR"),
-            offer("no-cash", 4_200_000, candidate=True, cash_price=None),
+            offer("no-price", 4_200_000, candidate=True, cash_price=None, advertised_price=None),
         )
 
         digest = build_price_digest(
@@ -85,8 +91,9 @@ class PriceDigestTests(unittest.TestCase):
         )
 
         self.assertEqual([item.listing.cash_price for item in digest.confirmed], [5_900_000])
-        self.assertEqual([item.listing.cash_price for item in digest.candidates], [5_300_000, 5_500_000, 5_700_000])
-        self.assertEqual(digest.candidates[0].missing, ("dcc",))
+        self.assertEqual([item.listing.advertised_price for item in digest.candidates], [5_300_000, 5_500_000])
+        self.assertEqual(digest.candidates[0].missing, ("dcc", "in_stock", "cash_price"))
+        self.assertEqual(digest.candidates[1].missing, ("dcc", "cash_price"))
         self.assertEqual(digest.successful_sources, 1)
         self.assertEqual(digest.failed_sources, 1)
 
