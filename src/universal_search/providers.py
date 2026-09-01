@@ -8,6 +8,7 @@ from urllib.request import Request, urlopen
 
 from .adapters import enrich_detail_page
 from .evidence import apply_page_enrichment, parse_listing
+from .market_adapters import apply_site_adapter, enrich_myauto_payload, merge_enrichment, myauto_api_url
 from .schema import Listing, SearchProfile
 
 MARKET_DOMAINS: dict[str, tuple[str, ...]] = {
@@ -33,6 +34,19 @@ def _request_json(url: str, payload: dict, headers: dict[str, str], timeout: int
     req = Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
     with urlopen(req, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8", errors="replace"))
+
+
+def _request_get_json(url: str, timeout: int = 20) -> dict:
+    req = Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; VehicleSearchBot/1.0; +https://github.com/DmitryIudin-web/poisk)",
+        "Accept": "application/json,text/plain,*/*",
+        "Accept-Language": "en,ka;q=0.8,ru;q=0.6",
+    })
+    with urlopen(req, timeout=timeout) as response:
+        data = response.read(8_000_001)
+        if len(data) > 8_000_000:
+            raise ValueError("JSON detail exceeds 8 MB")
+        return json.loads(data.decode("utf-8", errors="replace"))
 
 
 def _request_text(url: str, timeout: int = 20) -> str:
@@ -107,19 +121,32 @@ class BrightDataSerpProvider:
                     warnings.append(f"SERP {domain}: {type(exc).__name__}: {exc}")
         return list(combined.values()), warnings
 
+    def _detail_enrichment(self, item: OrganicResult, host: str, warnings: list[str]):
+        enrichment = None
+        try:
+            raw = _request_text(item.url)
+            enrichment = enrich_detail_page(item.url, raw)
+        except Exception as exc:
+            warnings.append(f"detail {host}: {type(exc).__name__}: {exc}")
+
+        if host == "myauto.ge" or host.endswith(".myauto.ge"):
+            api_url = myauto_api_url(item.url)
+            if api_url:
+                try:
+                    payload = _request_get_json(api_url)
+                    enrichment = merge_enrichment(enrichment, enrich_myauto_payload(item.url, payload))
+                except Exception as exc:
+                    warnings.append(f"myauto-api {host}: {type(exc).__name__}: {exc}")
+
+        return apply_site_adapter(item.url, enrichment)
+
     def search(self, profile: SearchProfile, *, max_details: int = 30) -> tuple[list[Listing], list[str]]:
         organic, warnings = self.discover(profile)
         listings: list[Listing] = []
         for item in organic[:max_details]:
             host = urlparse(item.url).netloc.casefold().removeprefix("www.")
-            enrichment = None
-            try:
-                raw = _request_text(item.url)
-                enrichment = enrich_detail_page(item.url, raw)
-                body = enrichment.text
-            except Exception as exc:
-                body = ""
-                warnings.append(f"detail {host}: {type(exc).__name__}: {exc}")
+            enrichment = self._detail_enrichment(item, host, warnings)
+            body = enrichment.text if enrichment is not None else ""
             listing = parse_listing(item.url, host, item.title, body, profile, item.description)
             if enrichment is not None:
                 listing = apply_page_enrichment(listing, profile, enrichment)
