@@ -7,6 +7,7 @@ import time
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
+from .fx import FxProvider, normalize_listing_price
 from .notify import listing_message, telegram_send
 from .providers import BrightDataSerpProvider
 from .schema import SearchProfile
@@ -22,6 +23,13 @@ def run_search(store: Store, search_id: str, profile: SearchProfile, chat_id: st
     price_drops = 0
     vision_verified = 0
 
+    fx_snapshot = None
+    if profile.max_price and profile.price_currency:
+        try:
+            fx_snapshot = FxProvider().get()
+        except Exception as exc:
+            warnings.append(f"FX: {type(exc).__name__}: {exc}")
+
     for listing in listings:
         if listing.status == "candidate" and listing.image_urls:
             missing_features = [name for name in listing.missing if name in profile.required_features]
@@ -31,6 +39,9 @@ def run_search(store: Store, search_id: str, profile: SearchProfile, chat_id: st
                 if confirmations:
                     apply_vision_confirmations(listing, confirmations)
                     vision_verified += len(confirmations)
+
+        if fx_snapshot is not None:
+            normalize_listing_price(listing, profile, fx_snapshot)
 
         is_new, old_price = store.save_listing(search_id, listing)
         if listing.status != "relevant":
