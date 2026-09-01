@@ -37,6 +37,17 @@ CREATE INDEX IF NOT EXISTS idx_searches_due ON searches(enabled, next_run_at);
 """
 
 
+def _effective_price(payload: dict) -> float | None:
+    for key in ("export_price", "net_price", "price"):
+        value = payload.get(key)
+        if value is not None:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                continue
+    return None
+
+
 class Store:
     def __init__(self, path: str = "data/searches.db"):
         self.path = Path(path)
@@ -87,11 +98,12 @@ class Store:
 
     def save_listing(self, search_id: str, listing: Listing) -> tuple[bool, float | None]:
         now = datetime.now(timezone.utc).isoformat()
-        payload = json.dumps(listing.to_dict(), ensure_ascii=False)
+        payload_dict = listing.to_dict()
+        payload = json.dumps(payload_dict, ensure_ascii=False)
         with self.conn() as db:
             old = db.execute("SELECT payload_json FROM listings WHERE search_id=? AND fingerprint=?", (search_id, listing.fingerprint)).fetchone()
             if old:
-                old_price = json.loads(old["payload_json"]).get("price")
+                old_price = _effective_price(json.loads(old["payload_json"]))
                 db.execute("UPDATE listings SET payload_json=?, last_seen_at=? WHERE search_id=? AND fingerprint=?", (payload, now, search_id, listing.fingerprint))
                 return False, old_price
             db.execute("INSERT INTO listings(search_id, fingerprint, payload_json, first_seen_at, last_seen_at) VALUES(?,?,?,?,?)", (search_id, listing.fingerprint, payload, now, now))
