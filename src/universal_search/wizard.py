@@ -16,6 +16,19 @@ def next_questions(profile: SearchProfile) -> list[Question]:
     if questions:
         return questions[:2]
 
+    if "trim" not in profile.answered_fields:
+        questions.append(Question(
+            "trim", "Нужна конкретная версия / комплектация?", "text", required=False,
+            help_text="Например: Sport Platinum, M60i, Autobiography. Пусто = любая.",
+        ))
+    if "body_variants" not in profile.answered_fields:
+        questions.append(Question(
+            "body_variants", "Есть требование к кузову, базе или версии длины?", "multi_text", required=False,
+            help_text="Например: ESV; Long; LWB; стандартная база. Пусто = любая.",
+        ))
+    if questions:
+        return questions[:2]
+
     if profile.year_from is None:
         questions.append(Question("year_from", "С какого года выпуска / модельного года искать?", "number"))
     if profile.max_mileage_km is None:
@@ -37,8 +50,8 @@ def next_questions(profile: SearchProfile) -> list[Question]:
         ))
     if "required_features" not in profile.answered_fields:
         questions.append(Question(
-            "required_features", "Какие опции обязательны и должны быть подтверждены в объявлении?", "multi_text", required=False,
-            help_text="Например: панорамная крыша; задние экраны; массаж; 360 камера.",
+            "required_features", "Какие опции обязательны и должны быть подтверждены?", "multi_text", required=False,
+            help_text="Например: панорамная крыша; задние экраны; широкая цифровая торпеда; массаж.",
         ))
     if questions:
         return questions[:2]
