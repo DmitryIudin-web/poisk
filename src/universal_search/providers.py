@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from urllib.parse import quote_plus, urlparse
 from urllib.request import Request, urlopen
 
-from .evidence import html_to_text, parse_listing
+from .adapters import enrich_detail_page
+from .evidence import apply_page_enrichment, parse_listing
 from .schema import Listing, SearchProfile
 
 MARKET_DOMAINS: dict[str, tuple[str, ...]] = {
@@ -35,16 +36,20 @@ def _request_json(url: str, payload: dict, headers: dict[str, str], timeout: int
 
 
 def _request_text(url: str, timeout: int = 20) -> str:
-    req = Request(url, headers={"User-Agent": "Mozilla/5.0 VehicleSearchBot/1.0", "Accept": "text/html"})
+    req = Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (compatible; VehicleSearchBot/1.0; +https://github.com/DmitryIudin-web/poisk)",
+        "Accept": "text/html,application/xhtml+xml",
+        "Accept-Language": "en,de;q=0.8,ru;q=0.6",
+    })
     with urlopen(req, timeout=timeout) as response:
-        data = response.read(5_000_001)
-        if len(data) > 5_000_000:
-            raise ValueError("detail page exceeds 5 MB")
+        data = response.read(8_000_001)
+        if len(data) > 8_000_000:
+            raise ValueError("detail page exceeds 8 MB")
         return data.decode(response.headers.get_content_charset() or "utf-8", errors="replace")
 
 
 class BrightDataSerpProvider:
-    """Generic discovery provider. Admin supplies one key; public users do not."""
+    """Generic discovery plus site-aware detail parsing. Admin supplies keys; public users do not."""
 
     endpoint = "https://api.brightdata.com/request"
 
@@ -81,6 +86,8 @@ class BrightDataSerpProvider:
             return [], ["BRIGHTDATA_API_KEY is not configured"]
         terms = [profile.make, profile.model, profile.trim]
         terms.extend(profile.required_features[:3])
+        if profile.year_from and profile.year_from == profile.year_to:
+            terms.append(str(profile.year_from))
         base = " ".join(term for term in terms if term).strip()
         combined: dict[str, OrganicResult] = {}
         for market in profile.markets:
@@ -92,8 +99,8 @@ class BrightDataSerpProvider:
                 query = f'{base} site:{domain}'
                 try:
                     for item in self._query(query):
-                        host = urlparse(item.url).netloc.casefold()
-                        if domain.casefold() not in host:
+                        host = urlparse(item.url).netloc.casefold().removeprefix("www.")
+                        if not (host == domain.casefold() or host.endswith("." + domain.casefold())):
                             continue
                         combined[item.url] = item
                 except Exception as exc:
@@ -105,11 +112,16 @@ class BrightDataSerpProvider:
         listings: list[Listing] = []
         for item in organic[:max_details]:
             host = urlparse(item.url).netloc.casefold().removeprefix("www.")
+            enrichment = None
             try:
                 raw = _request_text(item.url)
-                body = html_to_text(raw)
+                enrichment = enrich_detail_page(item.url, raw)
+                body = enrichment.text
             except Exception as exc:
                 body = ""
-                warnings.append(f"detail {host}: {type(exc).__name__}")
-            listings.append(parse_listing(item.url, host, item.title, body, profile, item.description))
+                warnings.append(f"detail {host}: {type(exc).__name__}: {exc}")
+            listing = parse_listing(item.url, host, item.title, body, profile, item.description)
+            if enrichment is not None:
+                listing = apply_page_enrichment(listing, profile, enrichment)
+            listings.append(listing)
         return listings, warnings
