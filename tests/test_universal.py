@@ -3,6 +3,9 @@ import unittest
 
 from universal_search.adapters import enrich_detail_page
 from universal_search.evidence import apply_page_enrichment, parse_listing
+from universal_search.fx import FxSnapshot, normalize_listing_price
+from universal_search.market_adapters import apply_site_adapter, enrich_myauto_payload, myauto_api_url
+from universal_search.ratelimit import SlidingWindowLimiter
 from universal_search.schema import SearchProfile
 from universal_search.store import Store
 from universal_search.vision import apply_vision_confirmations
@@ -103,6 +106,56 @@ class UniversalSearchTests(unittest.TestCase):
         self.assertTrue(enrichment.export_status)
         self.assertEqual(enrichment.regional_spec, "GCC")
         self.assertEqual(enrichment.location, "Dubai, UAE")
+
+    def test_autoscout_adapter_marks_vat_and_export(self):
+        html = '''<html><body>Cadillac Escalade Sport Platinum. MwSt. ausweisbar. NON-EU export only.</body></html>'''
+        enrichment = enrich_detail_page("https://www.autoscout24.de/angebote/x", html)
+        enrichment = apply_site_adapter("https://www.autoscout24.de/angebote/x", enrichment)
+        self.assertEqual(enrichment.vat_status, "VAT deductible")
+        self.assertTrue(enrichment.export_status)
+
+    def test_myauto_api_url_and_payload_enrichment(self):
+        url = "https://www.myauto.ge/en/pr/89476234/for-sale-cadillac-escalade"
+        self.assertEqual(myauto_api_url(url), "https://api2.myauto.ge/ka/products/89476234")
+        payload = {
+            "data": {
+                "info": {
+                    "make": "Cadillac", "model": "Escalade ESV Sport Platinum", "prod_year": 2026,
+                    "mileage": 42, "price": 119000, "currency": "USD", "city": "Tbilisi",
+                    "photo": "https://static.myauto.ge/photos/89476234-1.jpg",
+                }
+            }
+        }
+        enrichment = enrich_myauto_payload(url, payload)
+        self.assertEqual(enrichment.location, "Tbilisi")
+        self.assertEqual(enrichment.body_variant, "ESV")
+        self.assertEqual(enrichment.price_currency, "USD")
+        self.assertIn("42 km", enrichment.text)
+        self.assertIn("119000 USD", enrichment.text)
+        self.assertEqual(len(enrichment.image_urls), 1)
+
+    def test_fx_normalization_can_resolve_cross_currency_limit(self):
+        profile = SearchProfile(
+            make="Cadillac", model="Escalade", markets=["ОАЭ"], max_price=115000,
+            price_currency="EUR",
+        )
+        listing = parse_listing(
+            "https://example.com/a", "example.com", "Cadillac Escalade",
+            "Cadillac Escalade 2026 10 km AED 445000", profile,
+        )
+        self.assertIn("price_currency", listing.missing)
+        snapshot = FxSnapshot(rates={"AED": 3.6725, "EUR": 0.85}, updated_at="test")
+        normalize_listing_price(listing, profile, snapshot)
+        self.assertEqual(listing.normalized_currency, "EUR")
+        self.assertAlmostEqual(listing.normalized_price, 445000 / 3.6725 * 0.85, places=2)
+        self.assertNotIn("price_currency", listing.missing)
+
+    def test_rate_limiter_rejects_after_limit(self):
+        limiter = SlidingWindowLimiter()
+        self.assertTrue(limiter.allow("1.2.3.4", "api", 2, 60))
+        self.assertTrue(limiter.allow("1.2.3.4", "api", 2, 60))
+        self.assertFalse(limiter.allow("1.2.3.4", "api", 2, 60))
+        self.assertTrue(limiter.allow("5.6.7.8", "api", 2, 60))
 
     def test_store_deduplicates_same_listing(self):
         with tempfile.TemporaryDirectory() as td:
