@@ -11,27 +11,48 @@ from .notify import listing_message, telegram_send
 from .providers import BrightDataSerpProvider
 from .schema import SearchProfile
 from .store import Store
+from .vision import VisionVerifier, apply_vision_confirmations
 
 
 def run_search(store: Store, search_id: str, profile: SearchProfile, chat_id: str | None = None) -> dict:
     provider = BrightDataSerpProvider()
+    vision = VisionVerifier()
     listings, warnings = provider.search(profile)
     new_relevant = 0
     price_drops = 0
+    vision_verified = 0
+
     for listing in listings:
+        if listing.status == "candidate" and listing.image_urls:
+            missing_features = [name for name in listing.missing if name in profile.required_features]
+            if missing_features and vision.configured:
+                confirmations, vision_warnings = vision.verify(listing, missing_features)
+                warnings.extend(f"{listing.source}: {warning}" for warning in vision_warnings)
+                if confirmations:
+                    apply_vision_confirmations(listing, confirmations)
+                    vision_verified += len(confirmations)
+
         is_new, old_price = store.save_listing(search_id, listing)
         if listing.status != "relevant":
             continue
+        effective_price = listing.export_price or listing.net_price or listing.price
         if is_new:
             new_relevant += 1
             if chat_id:
                 telegram_send(chat_id, listing_message(listing))
-        elif old_price and listing.price and listing.price < old_price:
+        elif old_price and effective_price and listing.price and listing.price < old_price:
             price_drops += 1
             if chat_id:
                 telegram_send(chat_id, listing_message(listing, event=f"Цена снижена: {old_price:,.0f} → {listing.price:,.0f}"))
+
     store.mark_run(search_id, profile.interval_minutes)
-    return {"found": len(listings), "new_relevant": new_relevant, "price_drops": price_drops, "warnings": warnings}
+    return {
+        "found": len(listings),
+        "new_relevant": new_relevant,
+        "price_drops": price_drops,
+        "vision_confirmations": vision_verified,
+        "warnings": warnings,
+    }
 
 
 def poll_telegram_bindings(store: Store) -> None:
