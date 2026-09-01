@@ -44,9 +44,14 @@ def listing_message(listing: Listing, *, event: str = "Новый подходя
     if listing.export_vat is True:
         details.append("ex-VAT/export подтверждён")
     meta = " | ".join(details) if details else "доп. данные не опубликованы"
+    normalized = ""
+    if listing.normalized_price is not None and listing.normalized_currency:
+        normalized = f"\nВ валюте фильтра: {_money(listing.normalized_price, listing.normalized_currency)}"
+        if listing.fx_updated_at:
+            normalized += f" (FX: {listing.fx_updated_at})"
     return (
         f"🚘 {event}\n{listing.title}\n"
-        f"{price_label}: {_money(effective, listing.currency)}\n"
+        f"{price_label}: {_money(effective, listing.currency)}{normalized}\n"
         f"Год: {listing.year or 'не подтверждён'} | Пробег: {listing.mileage_km if listing.mileage_km is not None else 'не подтверждён'} км\n"
         f"{meta}\n"
         f"Подтверждено: {', '.join(features) if features else 'нет'}\n"
