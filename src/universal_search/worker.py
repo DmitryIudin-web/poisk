@@ -40,10 +40,10 @@ def run_search(store: Store, search_id: str, profile: SearchProfile, chat_id: st
             new_relevant += 1
             if chat_id:
                 telegram_send(chat_id, listing_message(listing))
-        elif old_price and effective_price and listing.price and listing.price < old_price:
+        elif old_price and effective_price and effective_price < old_price:
             price_drops += 1
             if chat_id:
-                telegram_send(chat_id, listing_message(listing, event=f"Цена снижена: {old_price:,.0f} → {listing.price:,.0f}"))
+                telegram_send(chat_id, listing_message(listing, event=f"Цена снижена: {old_price:,.0f} → {effective_price:,.0f}"))
 
     store.mark_run(search_id, profile.interval_minutes)
     return {
