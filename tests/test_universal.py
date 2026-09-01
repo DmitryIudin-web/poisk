@@ -14,11 +14,16 @@ class UniversalSearchTests(unittest.TestCase):
         keys = [q.key for q in next_questions(SearchProfile())]
         self.assertEqual(keys, ["make", "model"])
 
+    def test_wizard_asks_trim_and_body_after_model(self):
+        p = SearchProfile(make="Cadillac", model="Escalade")
+        keys = [q.key for q in next_questions(p)]
+        self.assertEqual(keys, ["trim", "body_variants"])
+
     def test_optional_blank_answers_do_not_loop(self):
         p = SearchProfile(
             make="BMW", model="X5", year_from=2025, max_mileage_km=1000,
             condition="either", markets=["Европа"],
-            answered_fields=["condition", "colors", "required_features", "max_price", "export_vat_required"],
+            answered_fields=["trim", "body_variants", "condition", "colors", "required_features", "max_price", "export_vat_required"],
         )
         self.assertEqual(next_questions(p), [])
 
