@@ -9,15 +9,11 @@ from urllib.parse import urljoin, urlparse
 
 from .evidence import html_to_text
 
-
-_MONEY_AFTER = re.compile(
-    r"(?<!\d)(\d{1,3}(?:[\s.,]\d{3})+|\d{4,9})(?:[.,]\d{1,2})?\s*(EUR|€|USD|\$|AED|CHF|CZK|RUB|₽|GEL|KGS)",
-    re.I,
-)
-_MONEY_BEFORE = re.compile(
-    r"(EUR|€|USD|\$|AED|CHF|CZK|RUB|₽|GEL|KGS)\s*(\d{1,3}(?:[\s.,]\d{3})+|\d{4,9})(?:[.,]\d{1,2})?",
-    re.I,
-)
+_MONEY_AFTER = re.compile(r"(?<!\d)(\d{1,3}(?:[\s.,]\d{3})+|\d{4,9})(?:[.,]\d{1,2})?\s*(EUR|€|USD|\$|AED|CHF|CZK|RUB|₽|GEL|KGS)", re.I)
+_MONEY_BEFORE = re.compile(r"(EUR|€|USD|\$|AED|CHF|CZK|RUB|₽|GEL|KGS)\s*(\d{1,3}(?:[\s.,]\d{3})+|\d{4,9})(?:[.,]\d{1,2})?", re.I)
+_EXPORT_LABELS = (r"\bnon[- ]?eu exportpreis\b", r"\bexportpreis\b", r"\bexport price\b", r"\bT1(?:\s+price)?\b")
+_NET_LABELS = (r"\bnetto\b", r"\bnet price\b", r"\bex[- ]?vat\b", r"\bexcluding vat\b", r"\bvat excluded\b", r"\bexkl\.?\s*(?:mwst|vat)\b", r"\bohne mwst\b")
+_GROSS_LABELS = (r"\bbrutto\b", r"\bgross price\b", r"\bincluding vat\b", r"\bvat included\b", r"\binkl\.?\s*(?:mwst|vat)\b")
 
 
 def _number(raw: str) -> float:
@@ -35,6 +31,32 @@ def _currency(token: str | None) -> str | None:
     return {"€": "EUR", "$": "USD", "₽": "RUB"}.get(token, token)
 
 
+def _money_hits(text: str) -> list[tuple[int, float, str | None]]:
+    hits: list[tuple[int, float, str | None]] = []
+    for match in _MONEY_AFTER.finditer(text):
+        hits.append((match.start(), _number(match.group(1)), _currency(match.group(2))))
+    for match in _MONEY_BEFORE.finditer(text):
+        hits.append((match.start(), _number(match.group(2)), _currency(match.group(1))))
+    return sorted(hits, key=lambda item: item[0])
+
+
+def _labeled_price(text: str, labels: tuple[str, ...]) -> tuple[float | None, str | None]:
+    """Find the nearest money amount after a label, otherwise the nearest one before it."""
+    for label in labels:
+        for match in re.finditer(label, text, re.I):
+            after = text[match.end(): min(len(text), match.end() + 100)]
+            after_hits = _money_hits(after)
+            if after_hits:
+                _, value, currency = after_hits[0]
+                return value, currency
+            before = text[max(0, match.start() - 100): match.start()]
+            before_hits = _money_hits(before)
+            if before_hits:
+                _, value, currency = before_hits[-1]
+                return value, currency
+    return None, None
+
+
 @dataclass
 class PageEnrichment:
     text: str
@@ -47,6 +69,7 @@ class PageEnrichment:
     vat_status: str | None = None
     net_price: float | None = None
     gross_price: float | None = None
+    export_price: float | None = None
     price_currency: str | None = None
 
 
@@ -130,10 +153,7 @@ def _address_text(value: Any) -> str | None:
         return value.strip() or None
     if not isinstance(value, dict):
         return None
-    parts = [
-        value.get("streetAddress"), value.get("addressLocality"), value.get("addressRegion"),
-        value.get("postalCode"), value.get("addressCountry"),
-    ]
+    parts = [value.get("streetAddress"), value.get("addressLocality"), value.get("addressRegion"), value.get("postalCode"), value.get("addressCountry")]
     text = ", ".join(str(part).strip() for part in parts if part)
     return text or None
 
@@ -153,60 +173,37 @@ def _structured_facts(parser: _PageParser) -> tuple[list[str], dict[str, Any]]:
                     match = re.search(r"\b20[0-3]\d\b", str(value))
                     if match:
                         facts.append(match.group(0))
-                        found.setdefault("year", int(match.group(0)))
             mileage = item.get("mileageFromOdometer")
             if isinstance(mileage, dict) and mileage.get("value") is not None:
                 value = str(mileage.get("value"))
                 unit = str(mileage.get("unitText") or mileage.get("unitCode") or "km")
                 if unit.casefold() in {"kmt", "km", "kilometer", "kilometre", "kilometers", "kilometres"}:
                     facts.append(f"{value} km")
-                    try:
-                        found.setdefault("mileage_km", int(float(value)))
-                    except ValueError:
-                        pass
             for key in ("vehicleIdentificationNumber", "vin"):
                 value = item.get(key)
                 if isinstance(value, str) and len(value.strip()) == 17:
                     facts.append(value.strip())
-                    found.setdefault("vin", value.strip().upper())
             for raw_url in _image_values(item.get("image")):
                 url = urljoin(parser.base_url, raw_url)
                 if url.startswith(("http://", "https://")) and url not in parser.images:
                     parser.images.append(url)
             offers = item.get("offers")
-            offer_items = offers if isinstance(offers, list) else [offers]
-            for offer in offer_items:
+            for offer in offers if isinstance(offers, list) else [offers]:
                 if not isinstance(offer, dict):
                     continue
                 price = offer.get("price") or offer.get("lowPrice")
                 currency = offer.get("priceCurrency")
                 if price is not None and currency:
                     facts.append(f"{price} {currency}")
-                    try:
-                        found.setdefault("structured_price", float(str(price).replace(",", ".")))
-                        found.setdefault("price_currency", str(currency).upper())
-                    except ValueError:
-                        pass
-                address = _address_text((offer.get("availableAtOrFrom") or {}).get("address") if isinstance(offer.get("availableAtOrFrom"), dict) else None)
+                    found.setdefault("price_currency", str(currency).upper())
+                available = offer.get("availableAtOrFrom")
+                address = _address_text(available.get("address") if isinstance(available, dict) else None)
                 if address:
                     found.setdefault("location", address)
             address = _address_text(item.get("address"))
             if address:
                 found.setdefault("location", address)
     return facts, found
-
-
-def _labeled_price(text: str, labels: tuple[str, ...]) -> tuple[float | None, str | None]:
-    for label in labels:
-        for match in re.finditer(label, text, re.I):
-            window = text[max(0, match.start() - 90): min(len(text), match.end() + 120)]
-            money = _MONEY_AFTER.search(window)
-            if money:
-                return _number(money.group(1)), _currency(money.group(2))
-            money = _MONEY_BEFORE.search(window)
-            if money:
-                return _number(money.group(2)), _currency(money.group(1))
-    return None, None
 
 
 def _detect_body_variant(text: str) -> str | None:
@@ -219,23 +216,20 @@ def _detect_body_variant(text: str) -> str | None:
     return None
 
 
-def _detect_vat(text: str) -> tuple[bool | None, str | None, float | None, float | None, str | None]:
-    net_labels = (
-        r"\bnetto\b", r"\bnet price\b", r"\bex[- ]?vat\b", r"\bexcluding vat\b",
-        r"\bvat excluded\b", r"\bexkl\.?\s*(?:mwst|vat)\b", r"\bohne mwst\b",
-        r"\bnon[- ]?eu exportpreis\b", r"\bexportpreis\b", r"\bexport price\b",
-    )
-    gross_labels = (r"\bbrutto\b", r"\bgross price\b", r"\bincluding vat\b", r"\bvat included\b", r"\binkl\.?\s*(?:mwst|vat)\b")
-    net, net_currency = _labeled_price(text, net_labels)
-    gross, gross_currency = _labeled_price(text, gross_labels)
-    explicit_export_net = bool(re.search(r"(?:non[- ]?eu\s+)?export(?:preis| price)|ex[- ]?vat|vat\s*0%", text, re.I))
-    if explicit_export_net:
-        return True, "export/ex-VAT stated", net, gross, net_currency or gross_currency
+def _detect_vat(text: str) -> tuple[bool | None, str | None, float | None, float | None, float | None, str | None]:
+    export_price, export_currency = _labeled_price(text, _EXPORT_LABELS)
+    net_price, net_currency = _labeled_price(text, _NET_LABELS)
+    gross_price, gross_currency = _labeled_price(text, _GROSS_LABELS)
+    if export_price is not None:
+        net_price = net_price or export_price
+    explicit_ex_vat = bool(re.search(r"ex[- ]?vat|vat\s*0%|excluding vat|vat excluded|ohne mwst|exkl\.?\s*(?:mwst|vat)", text, re.I))
+    if export_price is not None or explicit_ex_vat:
+        return True, "export/ex-VAT stated", net_price, gross_price, export_price, export_currency or net_currency or gross_currency
     if re.search(r"mwst\.?\s*ausweisbar|vat\s*deductible|mehrwertsteuer\s*ausweisbar", text, re.I):
-        return None, "VAT deductible", net, gross, net_currency or gross_currency
+        return None, "VAT deductible", net_price, gross_price, None, net_currency or gross_currency
     if re.search(r"vat\s*included|including vat|inkl\.?\s*(?:mwst|vat)|brutto", text, re.I):
-        return None, "VAT included", net, gross, net_currency or gross_currency
-    return None, None, net, gross, net_currency or gross_currency
+        return None, "VAT included", net_price, gross_price, None, net_currency or gross_currency
+    return None, None, net_price, gross_price, None, net_currency or gross_currency
 
 
 def _dubicars(enrichment: PageEnrichment) -> None:
@@ -244,16 +238,19 @@ def _dubicars(enrichment: PageEnrichment) -> None:
         enrichment.export_status = True
     elif re.search(r"\bcannot be exported\b|\bnot for export\b", text, re.I):
         enrichment.export_status = False
-    specs = (
+    specs = []
+    for name, pattern in (
         ("GCC", r"\bGCC\s*(?:specs?|specification)?\b"),
         ("US", r"\b(?:US|USA|American)\s*(?:specs?|specification)?\b"),
         ("Canadian", r"\bCanadian\s*(?:specs?|specification)?\b"),
         ("European", r"\bEuropean\s*(?:specs?|specification)?\b"),
-    )
-    for name, pattern in specs:
+    ):
         if re.search(pattern, text, re.I):
-            enrichment.regional_spec = name
-            break
+            specs.append(name)
+    if len(specs) == 1:
+        enrichment.regional_spec = specs[0]
+    elif len(specs) > 1:
+        enrichment.regional_spec = "conflict: " + " / ".join(specs)
     for place in ("Dubai", "Sharjah", "Abu Dhabi", "Ajman", "Ras Al Khor"):
         if re.search(rf"\b{re.escape(place)}\b", text, re.I):
             enrichment.location = enrichment.location or place + ", UAE"
@@ -278,7 +275,7 @@ def enrich_detail_page(url: str, raw_html: str) -> PageEnrichment:
     facts, structured = _structured_facts(parser)
     if facts:
         text = (text + " " + " ".join(facts)).strip()
-    export_vat, vat_status, net_price, gross_price, price_currency = _detect_vat(text)
+    export_vat, vat_status, net_price, gross_price, export_price, price_currency = _detect_vat(text)
     enrichment = PageEnrichment(
         text=text,
         image_urls=parser.images[:16],
@@ -288,6 +285,7 @@ def enrich_detail_page(url: str, raw_html: str) -> PageEnrichment:
         vat_status=vat_status,
         net_price=net_price,
         gross_price=gross_price,
+        export_price=export_price,
         price_currency=price_currency or structured.get("price_currency"),
     )
     host = urlparse(url).netloc.casefold().removeprefix("www.")
