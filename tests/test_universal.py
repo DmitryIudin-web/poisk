@@ -1,9 +1,11 @@
 import tempfile
 import unittest
 
-from universal_search.evidence import parse_listing
+from universal_search.adapters import enrich_detail_page
+from universal_search.evidence import apply_page_enrichment, parse_listing
 from universal_search.schema import SearchProfile
 from universal_search.store import Store
+from universal_search.vision import apply_vision_confirmations
 from universal_search.wizard import next_questions
 
 
@@ -43,12 +45,66 @@ class UniversalSearchTests(unittest.TestCase):
         self.assertEqual(listing.status, "candidate")
         self.assertIn("задние экраны", listing.missing)
 
+    def test_vision_can_confirm_photo_only_feature(self):
+        profile = SearchProfile(make="Cadillac", model="Escalade", year_from=2026, max_mileage_km=1000, markets=["Европа"], required_features=["задние экраны"])
+        listing = parse_listing("https://example.com/a", "example.com", "Cadillac Escalade", "2026 Cadillac Escalade 10 km", profile)
+        self.assertEqual(listing.status, "candidate")
+        apply_vision_confirmations(listing, {
+            "задние экраны": {"value": True, "source": "vision", "source_text": "vision image 2: two factory screens", "confidence": 0.96}
+        })
+        self.assertEqual(listing.status, "relevant")
+        self.assertEqual(listing.evidence["задние экраны"]["source"], "vision")
+
+    def test_mobile_adapter_extracts_nearest_net_and_export_price(self):
+        profile = SearchProfile(
+            make="Cadillac", model="Escalade", trim="Sport Platinum", year_from=2026,
+            max_mileage_km=1000, condition="new", markets=["Европа"], colors=["чёрный"],
+            body_variants=["ESV"], required_features=["панорамная крыша", "задние экраны", "широкая цифровая торпеда"],
+            max_price=111000, price_currency="EUR", export_vat_required=True,
+        )
+        html = '''
+        <html><head>
+          <meta property="og:image" content="/photo1.jpg">
+          <script type="application/ld+json">{
+            "@type":"Vehicle", "name":"Cadillac Escalade ESV Sport Platinum",
+            "vehicleModelDate":"2026", "color":"Black", "vehicleIdentificationNumber":"1GYS97KL0TR167970",
+            "mileageFromOdometer":{"value":10,"unitCode":"KMT"},
+            "offers":{"price":"133800","priceCurrency":"EUR"}
+          }</script>
+        </head><body>
+          Neuwagen Cadillac Escalade ESV Sport Platinum. Black. 55-inch curved OLED.
+          Panoramic roof. Rear Seat Entertainment. €133 800 brutto / €112 437 netto.
+          NON-EU Exportpreis €110 000. MwSt. ausweisbar.
+        </body></html>'''
+        enrichment = enrich_detail_page("https://suchen.mobile.de/fahrzeuge/details.html?id=123", html)
+        self.assertEqual(enrichment.net_price, 112437)
+        self.assertEqual(enrichment.gross_price, 133800)
+        self.assertEqual(enrichment.export_price, 110000)
+        self.assertTrue(enrichment.export_vat)
+        self.assertEqual(enrichment.body_variant, "ESV")
+        self.assertTrue(enrichment.image_urls[0].endswith("/photo1.jpg"))
+        listing = parse_listing("https://suchen.mobile.de/fahrzeuge/details.html?id=123", "mobile.de", "Cadillac Escalade ESV Sport Platinum 2026", enrichment.text, profile)
+        apply_page_enrichment(listing, profile, enrichment)
+        self.assertEqual(listing.status, "relevant")
+        self.assertEqual(listing.export_price, 110000)
+        self.assertEqual(listing.vin, "1GYS97KL0TR167970")
+
+    def test_dubicars_adapter_marks_export_and_regional_spec(self):
+        html = '''<html><body>
+        2026 Cadillac Escalade Sport Platinum, GCC Specs, Dubai, Can be exported,
+        AED 445000, 120 km, panoramic roof, rear entertainment screens, 55-inch display.
+        </body></html>'''
+        enrichment = enrich_detail_page("https://www.dubicars.com/2026-cadillac-escalade-1.html", html)
+        self.assertTrue(enrichment.export_status)
+        self.assertEqual(enrichment.regional_spec, "GCC")
+        self.assertEqual(enrichment.location, "Dubai, UAE")
+
     def test_store_deduplicates_same_listing(self):
         with tempfile.TemporaryDirectory() as td:
             store = Store(f"{td}/db.sqlite")
             p = SearchProfile(make="BMW", model="X5", markets=["Европа"])
             sid, _, _ = store.create_search(p)
-            item = parse_listing("https://example.com/x?utm=1", "example.com", "BMW X5", "2026 15 km", p)
+            item = parse_listing("https://example.com/x?utm=1", "example.com", "BMW X5", "2026 BMW X5 15 km", p)
             first, _ = store.save_listing(sid, item)
             second, _ = store.save_listing(sid, item)
             self.assertTrue(first)
