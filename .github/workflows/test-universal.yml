@@ -1,0 +1,43 @@
+name: Universal search tests
+
+on:
+  pull_request:
+    paths:
+      - "src/universal_search/**"
+      - "tests/test_universal.py"
+      - "pyproject.toml"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".github/workflows/test-universal.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/universal_search/**"
+      - "tests/test_universal.py"
+      - "pyproject.toml"
+      - "Dockerfile"
+      - "docker-compose.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e .
+      - name: Unit tests
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests -t . -v
+      - name: FastAPI import smoke
+        env:
+          SEARCH_DB: /tmp/universal-search-test.db
+        run: python -c "from universal_search.app import app; assert app.title == 'Universal Vehicle Search'"
