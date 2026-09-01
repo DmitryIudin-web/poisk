@@ -78,6 +78,9 @@ class Listing:
     gross_price: float | None = None
     net_price: float | None = None
     export_price: float | None = None
+    normalized_price: float | None = None
+    normalized_currency: str | None = None
+    fx_updated_at: str | None = None
     year: int | None = None
     mileage_km: int | None = None
     color: str | None = None
