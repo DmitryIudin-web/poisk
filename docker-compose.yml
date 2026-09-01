@@ -1,0 +1,27 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      SEARCH_DB: /data/searches.db
+      BRIGHTDATA_API_KEY: ${BRIGHTDATA_API_KEY:-}
+      BRIGHTDATA_SERP_ZONE: ${BRIGHTDATA_SERP_ZONE:-serp_api1}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    volumes:
+      - search-data:/data
+    ports:
+      - "8000:8000"
+  worker:
+    build: .
+    restart: unless-stopped
+    command: ["python","-m","universal_search.worker","--db","/data/searches.db"]
+    environment:
+      BRIGHTDATA_API_KEY: ${BRIGHTDATA_API_KEY:-}
+      BRIGHTDATA_SERP_ZONE: ${BRIGHTDATA_SERP_ZONE:-serp_api1}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    volumes:
+      - search-data:/data
+    depends_on:
+      - web
+volumes:
+  search-data:
