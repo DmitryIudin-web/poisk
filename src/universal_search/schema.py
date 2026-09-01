@@ -49,6 +49,8 @@ class SearchProfile:
             errors.append("interval_minutes must be between 15 and 10080")
         if self.max_price is not None and self.max_price <= 0:
             errors.append("max_price must be positive")
+        if self.max_price is not None and not self.price_currency:
+            errors.append("price_currency is required when max_price is set")
         return errors
 
 
@@ -73,13 +75,20 @@ class Listing:
     snippet: str = ""
     price: float | None = None
     currency: str | None = None
+    gross_price: float | None = None
+    net_price: float | None = None
+    export_price: float | None = None
     year: int | None = None
     mileage_km: int | None = None
     color: str | None = None
     vin: str | None = None
     location: str | None = None
     body_variant: str | None = None
+    regional_spec: str | None = None
+    export_status: bool | None = None
     export_vat: bool | None = None
+    vat_status: str | None = None
+    image_urls: list[str] = field(default_factory=list)
     evidence: dict[str, dict[str, Any]] = field(default_factory=dict)
     status: str = "candidate"
     missing: list[str] = field(default_factory=list)
