@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 from typing import Any, Iterable
 from urllib.parse import urlparse
@@ -17,7 +16,7 @@ def merge_enrichment(base: PageEnrichment | None, extra: PageEnrichment | None) 
     base.image_urls = list(dict.fromkeys([*base.image_urls, *extra.image_urls]))[:20]
     for name in (
         "location", "body_variant", "regional_spec", "export_status", "export_vat",
-        "vat_status", "net_price", "gross_price", "price_currency",
+        "vat_status", "net_price", "gross_price", "export_price", "price_currency",
     ):
         value = getattr(extra, name, None)
         if value is not None:
@@ -81,6 +80,9 @@ def enrich_myauto_payload(url: str, payload: dict[str, Any]) -> PageEnrichment:
     location: str | None = None
     body_variant: str | None = None
     price_currency: str | None = None
+    price_value: float | None = None
+    mileage_value: int | None = None
+
     for path, value in _walk(payload):
         if value is None or isinstance(value, (dict, list)):
             continue
@@ -95,14 +97,26 @@ def enrich_myauto_payload(url: str, payload: dict[str, Any]) -> PageEnrichment:
         if location is None and isinstance(value, str) and any(token in key for token in ("city", "location", "address")):
             if re.search(r"Tbilisi|თბილის|Batumi|ბათუმ|Rustavi|რუსთავ|Kutaisi|ქუთაის", value, re.I):
                 location = value.strip()
-        if body_variant is None and isinstance(value, str):
-            if re.search(r"\bESV\b", value, re.I):
-                body_variant = "ESV"
+        if body_variant is None and isinstance(value, str) and re.search(r"\bESV\b", value, re.I):
+            body_variant = "ESV"
         if price_currency is None and any(token in key for token in ("currency", "currency_id")):
             token = str(value).upper()
             if token in {"USD", "EUR", "GEL", "₾"}:
                 price_currency = "GEL" if token == "₾" else token
+        if price_value is None and "price" in key and isinstance(value, (int, float)) and float(value) > 0:
+            price_value = float(value)
+        if mileage_value is None and any(token in key for token in ("mileage", "odometer", "run")):
+            try:
+                candidate = int(float(str(value)))
+                if 0 <= candidate <= 2_000_000:
+                    mileage_value = candidate
+            except ValueError:
+                pass
 
+    if mileage_value is not None:
+        fragments.append(f"{mileage_value} km")
+    if price_value is not None and price_currency:
+        fragments.append(f"{price_value:.0f} {price_currency}")
     text = " ".join(fragments)
     if re.search(r"\bnew\b|ახალი|новый", text, re.I):
         text += " new vehicle"
