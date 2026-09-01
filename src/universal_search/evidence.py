@@ -27,13 +27,13 @@ FEATURE_ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 COLOR_ALIASES: dict[str, tuple[str, ...]] = {
-    "чёрный": ("black", "schwarz", "черн", "чёрн"),
-    "серый": ("gray", "grey", "grau", "сер"),
-    "синий": ("blue", "blau", "син", "голуб"),
-    "голубой": ("blue", "blau", "голуб", "син"),
-    "бордо": ("burgundy", "bordeaux", "dark red", "maroon", "бордо", "темно-крас", "тёмно-крас"),
-    "красный": ("red", "rot", "красн"),
-    "белый": ("white", "weiß", "weiss", "бел"),
+    "чёрный": (r"\bblack\b", r"\bschwarz\b", r"\bчерн(?:ый|ая|ое|ого|ой|ом|ым|ую|ые|ых)?\b", r"\bчёрн(?:ый|ая|ое|ого|ой|ом|ым|ую|ые|ых)?\b"),
+    "серый": (r"\bgray\b", r"\bgrey\b", r"\bgrau\b", r"\bсер(?:ый|ая|ое|ого|ой|ом|ым|ую|ые|ых)\b"),
+    "синий": (r"\bblue\b", r"\bblau\b", r"\bсин(?:ий|яя|ее|его|ей|ем|им|юю|ие|их)\b", r"\bголуб(?:ой|ая|ое|ого|ой|ом|ым|ую|ые|ых)\b"),
+    "голубой": (r"\bblue\b", r"\bblau\b", r"\bголуб(?:ой|ая|ое|ого|ой|ом|ым|ую|ые|ых)\b", r"\bсин(?:ий|яя|ее|его|ей|ем|им|юю|ие|их)\b"),
+    "бордо": (r"\bburgundy\b", r"\bbordeaux\b", r"\bdark red\b", r"\bmaroon\b", r"\bбордо\b", r"\bтемно-красн\w*\b", r"\bтёмно-красн\w*\b"),
+    "красный": (r"\bred\b", r"\brot\b", r"\bкрасн\w*\b"),
+    "белый": (r"\bwhite\b", r"\bweiß\b", r"\bweiss\b", r"\bбел\w*\b"),
 }
 
 _NEW_PATTERNS = (r"\bbrand new\b", r"\bnew vehicle\b", r"\bnew car\b", r"\bneuwagen\b", r"\bneu\b", r"\bнов(?:ый|ая|ое)\b", r"\b0\s*km\b")
@@ -224,6 +224,7 @@ def apply_page_enrichment(listing: Listing, profile: SearchProfile, enrichment: 
     listing.vat_status = getattr(enrichment, "vat_status", None)
     listing.net_price = getattr(enrichment, "net_price", None)
     listing.gross_price = getattr(enrichment, "gross_price", None)
+    listing.export_price = getattr(enrichment, "export_price", None)
     enrichment_currency = getattr(enrichment, "price_currency", None)
     if listing.currency is None and enrichment_currency:
         listing.currency = str(enrichment_currency).upper()
@@ -241,9 +242,8 @@ def apply_page_enrichment(listing: Listing, profile: SearchProfile, enrichment: 
     if profile.export_vat_required:
         if listing.export_vat is True:
             listing.missing = [name for name in listing.missing if name != "export_vat"]
-        else:
-            if "export_vat" not in listing.missing:
-                listing.missing.append("export_vat")
+        elif "export_vat" not in listing.missing:
+            listing.missing.append("export_vat")
 
     if profile.max_price is not None and profile.export_vat_required:
         effective_price = listing.export_price or listing.net_price
