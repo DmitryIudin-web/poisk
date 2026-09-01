@@ -8,63 +8,98 @@
 2. Уточняет только недостающие параметры: комплектацию, кузов/базу, год, пробег, состояние, рынки, цвета, обязательные опции, бюджет и требование export/ex-VAT.
 3. Сохраняет каждый пользовательский поиск отдельно.
 4. Worker регулярно запускает поиск по выбранным рынкам.
-5. Объявление становится `relevant` только когда все обязательные параметры подтверждены. Отсутствие доказательства = `candidate`, а не автоматическое «есть» или «нет».
+5. Объявление становится `relevant` только когда обязательные параметры подтверждены. Отсутствие доказательства = `candidate`.
 6. Дедупликация идёт по VIN, а при его отсутствии — по каноническому URL и заголовку.
 7. Новые релевантные объявления и снижения фактической net/export цены могут уходить в Telegram.
 
 ## Архитектура
 
 - `FastAPI` — публичный web/API;
-- `SQLite WAL` — поиски, результаты и история для MVP;
+- `SQLite WAL` — поиски, результаты и история MVP;
 - отдельный `worker` — постоянный мониторинг;
-- `Bright Data SERP API` — общий discovery-слой по рынкам;
-- site-aware detail adapters — глубокое извлечение данных из карточек;
-- OpenAI Responses API — опциональная vision-проверка обязательных опций на фотографиях;
-- Docker Compose — развёртывание на обычном VPS без зависимости от Vercel или другого конкретного облака.
+- `Bright Data SERP API` — общий discovery-слой;
+- site-aware adapters — глубокий разбор конкретных карточек;
+- OpenAI Responses API — опциональная vision-проверка обязательных опций на фото;
+- ExchangeRate-API open endpoint — ежедневная FX-нормализация с сохранением исходной цены;
+- Caddy — единственная публичная точка входа, automatic HTTPS при наличии домена;
+- Docker Compose — развёртывание на обычном VPS, без Vercel.
 
 ## Рынки
 
 Европа, ОАЭ, Грузия, Россия, Китай, Корея, Япония, США.
 
-Стартовые источники задаются по доменам. Для `DubiCars` и `mobile.de` включён дополнительный слой разбора карточки: JSON-LD, фотографии, regional spec, ESV/Long, location, VAT/net/export markers, gross/net/export prices.
+### Специализированные источники
+
+- `DubiCars`: export status, GCC/US/Canadian spec, Dubai/Sharjah location, gross/net/export markers, фото.
+- `mobile.de`: JSON-LD, VIN, пробег, ESV/Long, gross/net/export/T1, VAT markers, фото.
+- `AutoScout24`: JSON-LD + VAT/export/spec normalization поверх карточки.
+- `MyAuto.ge`: HTML + резервный структурированный запрос `api2.myauto.ge/ka/products/{id}`; API fallback может вернуть пробег, цену, валюту, город, модель и фото даже когда основной DOM JS-only.
 
 ## Evidence gating
 
-Для каждой обязательной опции хранится доказательство. Приоритет:
+Для обязательной опции приоритет доказательства:
 
-1. явное текстовое подтверждение в карточке;
-2. structured data карточки;
-3. vision-проверка дилерских фотографий;
-4. если доказательства нет — `candidate`.
+1. явный текст карточки;
+2. structured data / JSON API;
+3. vision по фотографиям;
+4. нет доказательства → `candidate`.
 
-Vision никогда не должен подтверждать опцию по названию комплектации или типичному оснащению. Он анализирует только фотографии. Автомобиль не отклоняется автоматически только из-за визуального противоречия: такое событие остаётся warning для человека.
+Vision не подтверждает опцию по названию комплектации. Только по тому, что реально видно на дилерских фото. Визуальное противоречие само по себе не удаляет автомобиль автоматически, а создаёт warning для проверки человеком.
+
+## Цена: gross / net / export / FX
+
+Хранятся раздельно:
+
+- опубликованная цена;
+- `brutto/gross`;
+- `netto/net/ex-VAT`;
+- `export price / Exportpreis / T1`;
+- нормализованная цена в валюте пользовательского лимита.
+
+Исходная цена никогда не заменяется FX-конвертацией. Нормализованная цена используется для сравнения рынков и фильтра. Price-drop событие считается по исходной цене карточки, а не по движению курса.
+
+`MwSt. ausweisbar` / `VAT deductible` не считается автоматической гарантией export VAT 0%.
 
 ## Запуск
 
 ```bash
 cp .env.example .env
-# обязательно для общего web discovery
 # BRIGHTDATA_API_KEY=...
+# OPENAI_API_KEY=...       # опционально
+# TELEGRAM_BOT_TOKEN=...  # опционально
 
-# опционально: фото-проверка обязательных опций
-# OPENAI_API_KEY=...
+# для домена: PUBLIC_HOST=cars.example.com
+# без домена: PUBLIC_HOST=http://localhost
 
 docker compose up -d --build
 ```
 
-Открыть `http://SERVER_IP:8000/`.
+С доменом Caddy автоматически получает TLS-сертификат. FastAPI-порт `8000` наружу не публикуется.
 
-Проверка здоровья:
+Проверка:
 
 ```bash
-curl http://SERVER_IP:8000/health
+curl https://cars.example.com/health
 ```
 
+или без домена:
+
+```bash
+curl http://SERVER_IP/health
+```
+
+## Публичная защита
+
+По умолчанию:
+
+```env
+PUBLIC_RATE_LIMIT_PER_MINUTE=60
+CREATE_SEARCH_LIMIT_PER_HOUR=12
+```
+
+Caddy является единственной публичной точкой входа; FastAPI доверяет proxy headers только в Docker production-схеме.
+
 ## Vision
-
-Если задан `OPENAI_API_KEY`, worker отправляет ограниченное количество фотографий только для `candidate`, у которого не хватает доказательства обязательных опций.
-
-Настройки:
 
 ```env
 OPENAI_VISION_MODEL=gpt-5.6-luna
@@ -73,59 +108,41 @@ OPENAI_VISION_MAX_IMAGES=4
 OPENAI_VISION_MIN_CONFIDENCE=0.85
 ```
 
-По умолчанию vision подтверждает максимум четыре фотографии одной карточки. В `relevant` принимаются только подтверждения с confidence не ниже заданного порога.
-
-Если `OPENAI_API_KEY` отсутствует, система продолжает работать, а photo-only доказательства остаются `candidate`.
-
-## Gross / net / export
-
-Адаптер различает:
-
-- обычную опубликованную цену;
-- `brutto/gross`;
-- `netto/net/ex-VAT`;
-- отдельную `export price / Exportpreis / T1`.
-
-Цена привязывается к ближайшей подписи слева или справа, чтобы строка вида `€133 800 brutto / €112 437 netto` не перепутала gross и net. Если задано требование export/ex-VAT, неподтверждённый налоговый режим не проходит в `relevant`.
-
-`MwSt. ausweisbar` или `VAT deductible` сами по себе не считаются гарантией export VAT 0%.
+Без `OPENAI_API_KEY` сервис продолжает работу, а photo-only доказательства остаются `candidate`.
 
 ## Telegram
 
-После создания поиска интерфейс показывает команду вида:
+После создания поиска интерфейс выдаёт:
 
 ```text
 /bind A1B2C3
 ```
 
-Отправьте её Telegram-боту, токен которого задан в `TELEGRAM_BOT_TOKEN`. Worker привяжет `chat_id` к конкретному поиску. Публичному пользователю не нужны backend API-ключи.
-
-## Ограничения текущего этапа
-
-- CAPTCHA/403/429 конкретной площадки не превращаются в «машин нет»; карточка остаётся неполной или источник даёт warning.
-- DubiCars/mobile.de уже имеют специализированный detail parser, но discovery всё ещё начинается через общий SERP-слой.
-- AutoScout24/MyAuto пока используют общий detail parser и являются следующими кандидатами на отдельные адаптеры.
-- SQLite выбран для простого первого запуска; при реальной многопользовательской нагрузке следует перейти на PostgreSQL.
-- Для публичного production-домена нужен reverse proxy с HTTPS и rate limiting.
+Пользователь отправляет команду боту, после чего worker привязывает Telegram chat к конкретному поиску. В уведомлении показываются исходная export/net цена, нормализованная цена в валюте фильтра, VAT/spec/location и недостающие доказательства.
 
 ## Проверки
 
-Unit-тесты покрывают:
+CI покрывает:
 
-- пошаговый wizard и необязательные поля;
-- комплектацию и body/base вопросы;
-- evidence-gating обязательных опций;
-- vision promotion `candidate → relevant` только при подтверждении;
-- отсутствие ложного распознавания года как цены;
-- позиционный разбор gross/net/export price;
-- DubiCars export/regional spec;
-- дедупликацию результатов.
+- adaptive wizard;
+- trim/body/base вопросы;
+- evidence-gating;
+- vision promotion;
+- year/price guard;
+- DubiCars export/spec;
+- mobile.de nearest gross/net/export price;
+- AutoScout VAT/export;
+- MyAuto product API fallback;
+- cross-currency FX filter;
+- rate limiter;
+- дедупликацию;
+- FastAPI import smoke.
 
 CI: `.github/workflows/test-universal.yml`.
 
-## Следующие технические шаги
+## Следующий этап
 
-1. Добавить специализированные адаптеры AutoScout24 и MyAuto.
-2. Добавить FX-нормализацию для сравнения разных валют без потери исходной цены.
-3. Добавить rate limiting + Caddy/Nginx HTTPS для публичного production.
-4. Перенести состояние в PostgreSQL после появления реальной нагрузки.
+1. Улучшить визуальную карточку результатов и сортировку по normalized/export price.
+2. Добавить прямые source-adapters для AutoScout/MyAuto discovery, где это устойчиво и легально, сохранив SERP fallback.
+3. Добавить административную статистику: source gaps, расход SERP/vision, конверсия candidate → relevant.
+4. Перейти на PostgreSQL только после появления реальной многопользовательской нагрузки.
