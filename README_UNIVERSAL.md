@@ -24,6 +24,8 @@
 - Caddy — единственная публичная точка входа, automatic HTTPS при наличии домена;
 - Docker Compose — развёртывание на обычном VPS, без Vercel.
 
+FX feed: https://www.exchangerate-api.com/ — open access endpoint. В публичной версии приложения необходимо оставить дискретную атрибуцию `Rates By Exchange Rate API` согласно условиям их open-access режима.
+
 ## Рынки
 
 Европа, ОАЭ, Грузия, Россия, Китай, Корея, Япония, США.
@@ -142,7 +144,7 @@ CI: `.github/workflows/test-universal.yml`.
 
 ## Следующий этап
 
-1. Улучшить визуальную карточку результатов и сортировку по normalized/export price.
+1. Добавить административную статистику: source gaps, расход SERP/vision, candidate → relevant.
 2. Добавить прямые source-adapters для AutoScout/MyAuto discovery, где это устойчиво и легально, сохранив SERP fallback.
-3. Добавить административную статистику: source gaps, расход SERP/vision, конверсия candidate → relevant.
+3. Добавить пользовательские сортировки/сравнение нескольких машин в одной таблице.
 4. Перейти на PostgreSQL только после появления реальной многопользовательской нагрузки.
