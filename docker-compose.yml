@@ -12,10 +12,14 @@ services:
       OPENAI_VISION_MAX_IMAGES: ${OPENAI_VISION_MAX_IMAGES:-4}
       OPENAI_VISION_MIN_CONFIDENCE: ${OPENAI_VISION_MIN_CONFIDENCE:-0.85}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TRUST_PROXY_HEADERS: "1"
+      PUBLIC_RATE_LIMIT_PER_MINUTE: ${PUBLIC_RATE_LIMIT_PER_MINUTE:-60}
+      CREATE_SEARCH_LIMIT_PER_HOUR: ${CREATE_SEARCH_LIMIT_PER_HOUR:-12}
     volumes:
       - search-data:/data
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
+
   worker:
     build: .
     restart: unless-stopped
@@ -33,5 +37,24 @@ services:
       - search-data:/data
     depends_on:
       - web
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:-http://localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+
 volumes:
   search-data:
+  caddy-data:
+  caddy-config:
