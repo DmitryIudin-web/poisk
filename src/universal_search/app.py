@@ -4,16 +4,17 @@ import json
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
+from .ratelimit import LIMITER, client_ip
 from .schema import SearchProfile
 from .store import Store
 from .wizard import next_questions
 from .worker import run_search
 
-app = FastAPI(title="Universal Vehicle Search", version="0.1.0")
+app = FastAPI(title="Universal Vehicle Search", version="0.2.0")
 store = Store(os.getenv("SEARCH_DB", "data/searches.db"))
 STATIC = Path(__file__).with_name("static")
 
@@ -24,6 +25,21 @@ class WizardRequest(BaseModel):
 
 class CreateSearchRequest(BaseModel):
     profile: dict
+
+
+@app.middleware("http")
+async def public_rate_limit(request: Request, call_next):
+    if not request.url.path.startswith("/api/"):
+        return await call_next(request)
+    ip = client_ip(request)
+    per_minute = int(os.getenv("PUBLIC_RATE_LIMIT_PER_MINUTE", "60"))
+    if not LIMITER.allow(ip, "api", per_minute, 60):
+        return JSONResponse({"detail": "rate limit exceeded"}, status_code=429, headers={"Retry-After": "60"})
+    if request.method == "POST" and request.url.path == "/api/searches":
+        create_per_hour = int(os.getenv("CREATE_SEARCH_LIMIT_PER_HOUR", "12"))
+        if not LIMITER.allow(ip, "create-search", create_per_hour, 3600):
+            return JSONResponse({"detail": "search creation rate limit exceeded"}, status_code=429, headers={"Retry-After": "3600"})
+    return await call_next(request)
 
 
 @app.get("/")
