@@ -31,28 +31,32 @@ def _currency(token: str | None) -> str | None:
     return {"€": "EUR", "$": "USD", "₽": "RUB"}.get(token, token)
 
 
-def _money_hits(text: str) -> list[tuple[int, float, str | None]]:
-    hits: list[tuple[int, float, str | None]] = []
+def _money_hits(text: str) -> list[tuple[int, int, float, str | None]]:
+    hits: list[tuple[int, int, float, str | None]] = []
     for match in _MONEY_AFTER.finditer(text):
-        hits.append((match.start(), _number(match.group(1)), _currency(match.group(2))))
+        hits.append((match.start(), match.end(), _number(match.group(1)), _currency(match.group(2))))
     for match in _MONEY_BEFORE.finditer(text):
-        hits.append((match.start(), _number(match.group(2)), _currency(match.group(1))))
+        hits.append((match.start(), match.end(), _number(match.group(2)), _currency(match.group(1))))
     return sorted(hits, key=lambda item: item[0])
 
 
 def _labeled_price(text: str, labels: tuple[str, ...]) -> tuple[float | None, str | None]:
-    """Find the nearest money amount after a label, otherwise the nearest one before it."""
+    """Pick the physically nearest price to a net/gross/export label, left or right."""
     for label in labels:
         for match in re.finditer(label, text, re.I):
-            after = text[match.end(): min(len(text), match.end() + 100)]
-            after_hits = _money_hits(after)
-            if after_hits:
-                _, value, currency = after_hits[0]
-                return value, currency
             before = text[max(0, match.start() - 100): match.start()]
+            after = text[match.end(): min(len(text), match.end() + 100)]
+            candidates: list[tuple[int, float, str | None]] = []
             before_hits = _money_hits(before)
             if before_hits:
-                _, value, currency = before_hits[-1]
+                start, end, value, currency = before_hits[-1]
+                candidates.append((len(before) - end, value, currency))
+            after_hits = _money_hits(after)
+            if after_hits:
+                start, _end, value, currency = after_hits[0]
+                candidates.append((start, value, currency))
+            if candidates:
+                _distance, value, currency = min(candidates, key=lambda item: item[0])
                 return value, currency
     return None, None
 
