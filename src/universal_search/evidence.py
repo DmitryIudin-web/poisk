@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import re
 from hashlib import sha256
+from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
 from .schema import Listing, SearchProfile
@@ -35,6 +36,9 @@ COLOR_ALIASES: dict[str, tuple[str, ...]] = {
     "белый": ("white", "weiß", "weiss", "бел"),
 }
 
+_NEW_PATTERNS = (r"\bbrand new\b", r"\bnew vehicle\b", r"\bnew car\b", r"\bneuwagen\b", r"\bneu\b", r"\bнов(?:ый|ая|ое)\b", r"\b0\s*km\b")
+_USED_PATTERNS = (r"\bused\b", r"\bpre-owned\b", r"\bgebraucht\b", r"\bподержан", r"\bб/?у\b")
+
 
 def html_to_text(raw: str) -> str:
     raw = re.sub(r"(?is)<(script|style).*?>.*?</\1>", " ", raw)
@@ -59,6 +63,16 @@ def _number(raw: str) -> float:
         return float(re.sub(r"\D", "", raw) or 0)
 
 
+def _norm_phrase(value: str) -> str:
+    return " ".join(re.sub(r"[^\w]+", " ", value.casefold(), flags=re.UNICODE).split())
+
+
+def _phrase_present(text: str, phrase: str) -> bool:
+    needle = _norm_phrase(phrase)
+    haystack = _norm_phrase(text)
+    return bool(needle and needle in haystack)
+
+
 def _feature_patterns(feature: str) -> tuple[str, ...]:
     key = feature.strip().casefold()
     return FEATURE_ALIASES.get(key, (re.escape(feature.strip()),))
@@ -68,13 +82,53 @@ def feature_evidence(text: str, feature: str) -> dict[str, object]:
     for pattern in _feature_patterns(feature):
         match = re.search(pattern, text, re.I)
         if match:
-            return {"value": True, "source_text": match.group(0)[:120]}
-    return {"value": None, "source_text": None}
+            return {"value": True, "source_text": match.group(0)[:120], "source": "text"}
+    return {"value": None, "source_text": None, "source": "text"}
+
+
+def _requested_color(text: str, requested_colors: list[str]) -> str | None:
+    for requested in requested_colors:
+        aliases = COLOR_ALIASES.get(requested.casefold(), (re.escape(requested.casefold()),))
+        if any(re.search(alias, text, re.I) for alias in aliases):
+            return requested
+    return None
+
+
+def _known_color(text: str) -> str | None:
+    for name, aliases in COLOR_ALIASES.items():
+        if any(re.search(alias, text, re.I) for alias in aliases):
+            return name
+    return None
+
+
+def _condition(text: str) -> str | None:
+    if any(re.search(pattern, text, re.I) for pattern in _NEW_PATTERNS):
+        return "new"
+    if any(re.search(pattern, text, re.I) for pattern in _USED_PATTERNS):
+        return "used"
+    return None
+
+
+def _body_variant_matches(actual: str, requested: list[str]) -> bool:
+    actual_norm = _norm_phrase(actual)
+    return any(_norm_phrase(item) in actual_norm or actual_norm in _norm_phrase(item) for item in requested if item.strip())
+
+
+def _finalize_status(listing: Listing, failures: list[str]) -> Listing:
+    listing.missing = sorted(set(listing.missing))
+    if failures:
+        listing.status = "irrelevant"
+    elif listing.missing:
+        listing.status = "candidate"
+    else:
+        listing.status = "relevant"
+    return listing
 
 
 def parse_listing(url: str, source: str, title: str, body_text: str, profile: SearchProfile, snippet: str = "") -> Listing:
-    text = f"{title} {snippet} {body_text}"
-    years = [int(value) for value in _YEAR_RE.findall(text)]
+    text = f"{title} {snippet} {body_text}".strip()
+    preferred_year_text = f"{title} {snippet}".strip()
+    years = [int(value) for value in _YEAR_RE.findall(preferred_year_text)] or [int(value) for value in _YEAR_RE.findall(body_text)]
     year = max(years) if years else None
     mileage_match = _MILEAGE_RE.search(text)
     mileage = int(_number(mileage_match.group(1))) if mileage_match else None
@@ -95,33 +149,115 @@ def parse_listing(url: str, source: str, title: str, body_text: str, profile: Se
             price = _number(match.group(2))
             currency = {"€": "EUR", "$": "USD", "₽": "RUB"}.get(token, token)
 
-    lowered = text.casefold()
-    color = None
-    for requested in profile.colors:
-        aliases = COLOR_ALIASES.get(requested.casefold(), (requested.casefold(),))
-        if any(re.search(alias, lowered, re.I) for alias in aliases):
-            color = requested
-            break
-
+    color = _requested_color(text, profile.colors) if profile.colors else None
+    observed_color = _known_color(text)
     evidence = {feature: feature_evidence(text, feature) for feature in profile.required_features}
     missing: list[str] = [name for name, item in evidence.items() if item["value"] is not True]
     failures: list[str] = []
+
+    if not _phrase_present(text, profile.make):
+        missing.append("make")
+    if not _phrase_present(text, profile.model):
+        missing.append("model")
+    if profile.trim and not _phrase_present(text, profile.trim):
+        missing.append("trim")
+
+    if year is None and (profile.year_from or profile.year_to):
+        missing.append("year")
     if profile.year_from and year is not None and year < profile.year_from:
         failures.append("year")
     if profile.year_to and year is not None and year > profile.year_to:
         failures.append("year")
+
+    if profile.max_mileage_km is not None and mileage is None:
+        missing.append("mileage")
     if profile.max_mileage_km is not None and mileage is not None and mileage > profile.max_mileage_km:
         failures.append("mileage")
-    if profile.colors and color is None:
-        missing.append("color")
-    if profile.max_price is not None and price is not None and price > profile.max_price:
-        failures.append("price")
 
-    status = "irrelevant" if failures else ("candidate" if missing or year is None or mileage is None else "relevant")
+    if profile.colors:
+        if color is None and observed_color is None:
+            missing.append("color")
+        elif color is None and observed_color is not None:
+            failures.append("color")
+
+    condition = _condition(text)
+    if profile.condition in {"new", "used"}:
+        if condition is None:
+            missing.append("condition")
+        elif condition != profile.condition:
+            failures.append("condition")
+
+    for excluded in profile.excluded_features:
+        if feature_evidence(text, excluded)["value"] is True:
+            failures.append(f"excluded:{excluded}")
+
+    if profile.body_variants:
+        missing.append("body_variant")
+    if profile.export_vat_required:
+        missing.append("export_vat")
+
+    if profile.max_price is not None and not profile.export_vat_required:
+        if price is None:
+            missing.append("price")
+        elif profile.price_currency and currency != profile.price_currency.upper():
+            missing.append("price_currency")
+        elif price > profile.max_price:
+            failures.append("price")
+
     listing = Listing(
         url=canonical_url(url), source=source, title=title.strip()[:300], snippet=snippet.strip()[:1000],
         price=price, currency=currency, year=year, mileage_km=mileage, color=color, vin=vin,
-        evidence=evidence, status=status, missing=sorted(set(missing)),
+        evidence=evidence, missing=missing,
     )
+    _finalize_status(listing, failures)
+    listing.fingerprint = fingerprint(listing.url, listing.vin, listing.title)
+    return listing
+
+
+def apply_page_enrichment(listing: Listing, profile: SearchProfile, enrichment: Any) -> Listing:
+    listing.image_urls = list(dict.fromkeys(getattr(enrichment, "image_urls", []) or []))[:16]
+    listing.location = getattr(enrichment, "location", None) or listing.location
+    listing.body_variant = getattr(enrichment, "body_variant", None) or listing.body_variant
+    listing.regional_spec = getattr(enrichment, "regional_spec", None) or listing.regional_spec
+    listing.export_status = getattr(enrichment, "export_status", None)
+    listing.export_vat = getattr(enrichment, "export_vat", None)
+    listing.vat_status = getattr(enrichment, "vat_status", None)
+    listing.net_price = getattr(enrichment, "net_price", None)
+    listing.gross_price = getattr(enrichment, "gross_price", None)
+    enrichment_currency = getattr(enrichment, "price_currency", None)
+    if listing.currency is None and enrichment_currency:
+        listing.currency = str(enrichment_currency).upper()
+
+    failures: list[str] = []
+    if listing.status == "irrelevant":
+        failures.append("preexisting")
+
+    if profile.body_variants:
+        if listing.body_variant and _body_variant_matches(listing.body_variant, profile.body_variants):
+            listing.missing = [name for name in listing.missing if name != "body_variant"]
+        elif listing.body_variant:
+            failures.append("body_variant")
+
+    if profile.export_vat_required:
+        if listing.export_vat is True:
+            listing.missing = [name for name in listing.missing if name != "export_vat"]
+        else:
+            if "export_vat" not in listing.missing:
+                listing.missing.append("export_vat")
+
+    if profile.max_price is not None and profile.export_vat_required:
+        effective_price = listing.export_price or listing.net_price
+        if effective_price is None:
+            if "export_price" not in listing.missing:
+                listing.missing.append("export_price")
+        else:
+            listing.missing = [name for name in listing.missing if name != "export_price"]
+            if profile.price_currency and listing.currency and listing.currency != profile.price_currency.upper():
+                if "price_currency" not in listing.missing:
+                    listing.missing.append("price_currency")
+            elif effective_price > profile.max_price:
+                failures.append("price")
+
+    _finalize_status(listing, failures)
     listing.fingerprint = fingerprint(listing.url, listing.vin, listing.title)
     return listing
