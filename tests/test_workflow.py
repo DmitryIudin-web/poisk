@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "monitor.yml"
+UNIVERSAL_CI = ROOT / ".github" / "workflows" / "test-universal.yml"
 README = ROOT / "README.md"
 
 
@@ -37,13 +38,15 @@ class WorkflowContractTests(unittest.TestCase):
 
     def test_workflow_serializes_both_targets_and_persists_before_notification(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
+        ci_text = UNIVERSAL_CI.read_text(encoding="utf-8")
         self.assertIn("config/targets/teramont-pro-2026.json", text)
         self.assertIn("config/targets/range-rover-l460-d350-autobiography-2026.json", text)
         self.assertIn("config/range-rover-sources.json", text)
         self.assertIn('$STATE_DIR/range-rover-d350', text)
         self.assertNotIn("matrix:", text)
         self.assertNotIn("strategy:", text)
-        tests_at = text.index("unittest discover")
+        self.assertNotIn("unittest discover", text)
+        self.assertIn("unittest discover", ci_text)
         teramont_collect_at = text.index("teramont_monitor collect")
         range_rover_collect_at = text.index(
             "teramont_monitor collect", teramont_collect_at + 1
@@ -58,8 +61,6 @@ class WorkflowContractTests(unittest.TestCase):
             "teramont_monitor digest", teramont_digest_at + 1
         )
         second_push_at = text.index("push origin HEAD:monitor-state", first_push_at + 1)
-        self.assertLess(tests_at, teramont_collect_at)
-        self.assertLess(tests_at, range_rover_collect_at)
         self.assertLess(teramont_collect_at, range_rover_collect_at)
         self.assertLess(range_rover_collect_at, first_push_at)
         self.assertLess(first_push_at, teramont_notify_at)
