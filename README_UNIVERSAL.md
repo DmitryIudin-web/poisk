@@ -67,7 +67,10 @@ Vision не подтверждает опцию по названию компл
 ```bash
 cp .env.example .env
 # BRIGHTDATA_API_KEY=...
-# OPENAI_API_KEY=...       # опционально
+# APP_USER_TOKENS_JSON='{"dmitry":"long-random-access-code"}'
+# APP_ADMIN_TOKEN=...      # отдельный код для /api/admin/usage
+# OPENAI_API_KEY=...       # оставить пустым до отдельного API project/key
+# OPENAI_VISION_ENABLED=0  # fail-closed по умолчанию
 # TELEGRAM_BOT_TOKEN=...  # опционально
 
 # для домена: PUBLIC_HOST=cars.example.com
@@ -92,25 +95,77 @@ curl http://SERVER_IP/health
 
 ## Публичная защита
 
+Создание поиска и ручной запуск требуют персональный `X-App-Token`. Токены
+задаются как JSON-словарь `user_id → access code`; в SQLite сохраняется только
+стабильный `user_id`, сами access-коды в базу не попадают. Если токены не
+настроены, создание новых поисков закрыто, но уже созданные мониторинги worker
+продолжает обрабатывать до TTL.
+
 По умолчанию:
 
 ```env
-PUBLIC_RATE_LIMIT_PER_MINUTE=60
-CREATE_SEARCH_LIMIT_PER_HOUR=12
+APP_USER_TOKENS_JSON={}
+APP_ADMIN_TOKEN=
+MAX_ACTIVE_SEARCHES_PER_USER=3
+SEARCH_TTL_HOURS=24
+MIN_SEARCH_INTERVAL_MINUTES=60
+SEARCH_RUN_LOCK_MINUTES=60
+PUBLIC_RATE_LIMIT_PER_MINUTE=30
+CREATE_SEARCH_LIMIT_PER_HOUR=3
 ```
 
 Caddy является единственной публичной точкой входа; FastAPI доверяет proxy headers только в Docker production-схеме.
+TTL физически выключает просроченный поиск. Атомарная блокировка запуска не
+позволяет worker и ручному `/run` одновременно запустить один и тот же поиск;
+повторный ручной запуск до `next_run_at` получает отказ.
 
 ## Vision
 
 ```env
+OPENAI_VISION_ENABLED=0
 OPENAI_VISION_MODEL=gpt-5.6-luna
-OPENAI_VISION_DETAIL=high
-OPENAI_VISION_MAX_IMAGES=4
+OPENAI_VISION_DETAIL=low
+OPENAI_VISION_MAX_IMAGES=2
+OPENAI_VISION_MAX_CANDIDATES_PER_RUN=2
 OPENAI_VISION_MIN_CONFIDENCE=0.85
+OPENAI_VISION_MAX_OUTPUT_TOKENS=400
+OPENAI_VISION_RESERVED_INPUT_TOKENS=3000
+OPENAI_DAILY_TOKEN_LIMIT=50000
+OPENAI_DAILY_COST_LIMIT_USD=0.10
+OPENAI_INPUT_COST_PER_1M=0.20
+OPENAI_CACHED_INPUT_COST_PER_1M=0.02
+OPENAI_OUTPUT_COST_PER_1M=1.20
 ```
 
-Без `OPENAI_API_KEY` сервис продолжает работу, а photo-only доказательства остаются `candidate`.
+Vision включается только при одновременном наличии отдельного ключа и
+`OPENAI_VISION_ENABLED=1`. Ключ передаётся только worker-контейнеру, web-контейнер
+его не получает. Без ключа или при выключенном флаге внешний поиск продолжает
+работу, а photo-only доказательства остаются `candidate`.
+
+На один запуск допускается максимум два новых/изменившихся vision-кандидата и
+два изображения на кандидата. Одинаковая комбинация объявления, недостающих
+опций и фото повторно не отправляется; неуспешная проверка может быть повторена
+не раньше чем через 24 часа.
+
+Перед каждым запросом worker атомарно резервирует дневную квоту в SQLite. При
+превышении лимита токенов или стоимости OpenAI-вызов не выполняется. После
+ответа сохраняются:
+
+```text
+search_id → run_id → model → API call → input/output/cached tokens → images → estimated cost
+```
+
+Точный usage-ответ заменяет предварительную резервацию; неуспешный или
+неполный ответ сохраняет консервативную резервную оценку. Закрытый отчёт:
+
+```bash
+curl -H "X-Admin-Token: $APP_ADMIN_TOKEN" \
+  "https://cars.example.com/api/admin/usage?day=2026-09-02"
+```
+
+Тарифы в env — оценочные и должны сверяться с официальным OpenAI pricing перед
+включением нового model ID. Дневной token budget остаётся независимым жёстким
+ограничителем даже при устаревшей цене.
 
 ## Telegram
 
@@ -137,6 +192,10 @@ CI покрывает:
 - MyAuto product API fallback;
 - cross-currency FX filter;
 - rate limiter;
+- персональные access-коды, активный лимит и TTL;
+- атомарный run lock / cooldown;
+- атомарная дневная OpenAI-квота и usage ledger;
+- ограничение vision-кандидатов/фото и защита от повторной проверки;
 - дедупликацию;
 - FastAPI import smoke.
 
@@ -144,7 +203,7 @@ CI: `.github/workflows/test-universal.yml`.
 
 ## Следующий этап
 
-1. Добавить административную статистику: source gaps, расход SERP/vision, candidate → relevant.
+1. Добавить административную статистику source gaps, расход SERP и candidate → relevant поверх существующего OpenAI usage ledger.
 2. Добавить прямые source-adapters для AutoScout/MyAuto discovery, где это устойчиво и легально, сохранив SERP fallback.
 3. Добавить пользовательские сортировки/сравнение нескольких машин в одной таблице.
 4. Перейти на PostgreSQL только после появления реальной многопользовательской нагрузки.

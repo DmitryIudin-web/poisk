@@ -45,8 +45,8 @@ class SearchProfile:
             errors.append("max_mileage_km cannot be negative")
         if not self.markets:
             errors.append("at least one market is required")
-        if not 15 <= int(self.interval_minutes) <= 10080:
-            errors.append("interval_minutes must be between 15 and 10080")
+        if not 60 <= int(self.interval_minutes) <= 10080:
+            errors.append("interval_minutes must be between 60 and 10080")
         if self.max_price is not None and self.max_price <= 0:
             errors.append("max_price must be positive")
         if self.max_price is not None and not self.price_currency:

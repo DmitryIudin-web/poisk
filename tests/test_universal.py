@@ -1,15 +1,21 @@
+import json
+import os
+import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
+from universal_search.auth import AccessAuthenticator
 from universal_search.adapters import enrich_detail_page
 from universal_search.evidence import apply_page_enrichment, parse_listing
 from universal_search.fx import FxSnapshot, normalize_listing_price
 from universal_search.market_adapters import apply_site_adapter, enrich_myauto_payload, myauto_api_url
 from universal_search.ratelimit import SlidingWindowLimiter
 from universal_search.schema import SearchProfile
-from universal_search.store import Store
-from universal_search.vision import apply_vision_confirmations
+from universal_search.store import ActiveSearchLimitReached, Store
+from universal_search.vision import VisionOutcome, VisionVerifier, apply_vision_confirmations
 from universal_search.wizard import next_questions
+from universal_search.worker import run_search
 
 
 class UniversalSearchTests(unittest.TestCase):
@@ -156,6 +162,274 @@ class UniversalSearchTests(unittest.TestCase):
         self.assertTrue(limiter.allow("1.2.3.4", "api", 2, 60))
         self.assertFalse(limiter.allow("1.2.3.4", "api", 2, 60))
         self.assertTrue(limiter.allow("5.6.7.8", "api", 2, 60))
+
+    def test_personal_access_codes_resolve_stable_user(self):
+        auth = AccessAuthenticator('{"dmitry":"secret-one","manager":"secret-two"}', "admin-secret")
+        self.assertTrue(auth.configured)
+        self.assertEqual(auth.authenticate("secret-one"), "dmitry")
+        self.assertEqual(auth.authenticate("secret-two"), "manager")
+        self.assertIsNone(auth.authenticate("wrong"))
+        self.assertTrue(auth.authenticate_admin("admin-secret"))
+        self.assertFalse(auth.authenticate_admin("wrong"))
+
+    def test_vision_is_fail_closed_and_caps_expensive_inputs(self):
+        with patch.dict(
+            os.environ,
+            {
+                "OPENAI_VISION_ENABLED": "0",
+                "OPENAI_VISION_DETAIL": "high",
+                "OPENAI_VISION_MAX_IMAGES": "99",
+                "OPENAI_VISION_MAX_CANDIDATES_PER_RUN": "99",
+            },
+        ):
+            verifier = VisionVerifier(api_key="not-a-real-key")
+        self.assertFalse(verifier.configured)
+        self.assertEqual(verifier.detail, "low")
+        self.assertEqual(verifier.max_images, 2)
+        self.assertEqual(verifier.max_candidates_per_run, 2)
+
+    def test_vision_persists_response_usage_without_live_api_call(self):
+        profile = SearchProfile(
+            make="Cadillac",
+            model="Escalade",
+            markets=["Европа"],
+            required_features=["задние экраны"],
+        )
+        listing = parse_listing(
+            "https://example.com/vision",
+            "example.com",
+            "Cadillac Escalade",
+            "2026 Cadillac Escalade 10 km",
+            profile,
+        )
+        listing.image_urls = ["https://images.example.com/one.jpg"]
+        api_payload = {
+            "usage": {
+                "input_tokens": 700,
+                "output_tokens": 120,
+                "input_tokens_details": {"cached_tokens": 50},
+            },
+            "output": [
+                {
+                    "type": "message",
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": json.dumps(
+                                {
+                                    "results": [
+                                        {
+                                            "feature": "задние экраны",
+                                            "status": "confirmed",
+                                            "confidence": 0.97,
+                                            "evidence": "two factory screens",
+                                            "image_index": 0,
+                                        }
+                                    ]
+                                },
+                                ensure_ascii=False,
+                            ),
+                        }
+                    ],
+                }
+            ],
+        }
+
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self):
+                return json.dumps(api_payload, ensure_ascii=False).encode("utf-8")
+
+        with tempfile.TemporaryDirectory() as td, patch.dict(
+            os.environ,
+            {
+                "OPENAI_VISION_ENABLED": "1",
+                "OPENAI_DAILY_TOKEN_LIMIT": "50000",
+                "OPENAI_DAILY_COST_LIMIT_USD": "0.10",
+            },
+        ):
+            store = Store(f"{td}/db.sqlite")
+            search_id, _, _ = store.create_search(profile, owner_id="dmitry")
+            run_id, _ = store.start_run(search_id)
+            verifier = VisionVerifier(api_key="not-a-real-key")
+            with patch("universal_search.vision.urlopen", return_value=FakeResponse()):
+                outcome = verifier.verify(
+                    listing,
+                    ["задние экраны"],
+                    store=store,
+                    search_id=search_id,
+                    run_id=run_id,
+                )
+            self.assertTrue(outcome.attempted)
+            self.assertEqual(outcome.status, "succeeded")
+            self.assertIn("задние экраны", outcome.confirmations)
+            report = store.usage_report()
+            self.assertEqual(report["totals"]["input_tokens"], 700)
+            self.assertEqual(report["totals"]["output_tokens"], 120)
+            self.assertEqual(report["totals"]["cached_tokens"], 50)
+            self.assertEqual(report["totals"]["images"], 1)
+
+    def test_store_enforces_owner_active_count_ttl_and_run_cooldown(self):
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(f"{td}/db.sqlite")
+            profile = SearchProfile(make="BMW", model="X5", markets=["Европа"])
+            search_id, _, _ = store.create_search(profile, owner_id="dmitry", ttl_hours=1)
+            self.assertEqual(store.active_search_count("dmitry"), 1)
+            run_id, reason = store.start_run(search_id)
+            self.assertIsNotNone(run_id)
+            self.assertIsNone(reason)
+            second_run, second_reason = store.start_run(search_id)
+            self.assertIsNone(second_run)
+            self.assertEqual(second_reason, "search is already running")
+            store.finish_run(search_id, run_id, 60, status="succeeded")
+            cooldown_run, cooldown_reason = store.start_run(search_id)
+            self.assertIsNone(cooldown_run)
+            self.assertEqual(cooldown_reason, "search cooldown is active")
+            store.disable_search(search_id)
+            self.assertEqual(store.active_search_count("dmitry"), 0)
+
+    def test_active_search_limit_is_enforced_inside_creation_transaction(self):
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(f"{td}/db.sqlite")
+            profile = SearchProfile(make="BMW", model="X5", markets=["Европа"])
+            store.create_search(profile, owner_id="dmitry", max_active=1)
+            with self.assertRaises(ActiveSearchLimitReached):
+                store.create_search(profile, owner_id="dmitry", max_active=1)
+
+    def test_usage_reservation_is_atomic_and_records_exact_response_usage(self):
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(f"{td}/db.sqlite")
+            profile = SearchProfile(make="BMW", model="X5", markets=["Европа"])
+            search_id, _, _ = store.create_search(profile, owner_id="dmitry")
+            run_id, _ = store.start_run(search_id)
+            usage_id, _ = store.reserve_api_call(
+                search_id=search_id,
+                run_id=run_id,
+                model="gpt-5.6-luna",
+                images=2,
+                reserved_tokens=3000,
+                reserved_cost_usd=0.01,
+                daily_token_limit=5000,
+                daily_cost_limit_usd=0.10,
+            )
+            self.assertIsNotNone(usage_id)
+            blocked_id, current = store.reserve_api_call(
+                search_id=search_id,
+                run_id=run_id,
+                model="gpt-5.6-luna",
+                images=2,
+                reserved_tokens=3000,
+                reserved_cost_usd=0.01,
+                daily_token_limit=5000,
+                daily_cost_limit_usd=0.10,
+            )
+            self.assertIsNone(blocked_id)
+            self.assertEqual(current["budget_tokens"], 3000)
+            store.finalize_api_call(
+                usage_id,
+                status="succeeded",
+                input_tokens=100,
+                output_tokens=50,
+                cached_tokens=10,
+                estimated_cost_usd=0.0001,
+            )
+            report = store.usage_report()
+            self.assertEqual(report["totals"]["api_calls"], 1)
+            self.assertEqual(report["totals"]["input_tokens"], 100)
+            self.assertEqual(report["totals"]["output_tokens"], 50)
+            self.assertEqual(report["totals"]["cached_tokens"], 10)
+            self.assertEqual(report["totals"]["images"], 2)
+            self.assertEqual(report["totals"]["budget_tokens"], 150)
+
+    def test_successful_vision_signature_is_not_rechecked(self):
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(f"{td}/db.sqlite")
+            self.assertTrue(store.vision_check_due("s", "f", "sig"))
+            store.record_vision_check("s", "f", "sig", "succeeded")
+            self.assertFalse(store.vision_check_due("s", "f", "sig"))
+            self.assertTrue(store.vision_check_due("s", "f", "changed"))
+
+    def test_worker_caps_vision_candidates_per_run(self):
+        profile = SearchProfile(
+            make="Cadillac",
+            model="Escalade",
+            markets=["Европа"],
+            required_features=["задние экраны"],
+        )
+        listings = []
+        for index in range(3):
+            listing = parse_listing(
+                f"https://example.com/{index}",
+                "example.com",
+                f"Cadillac Escalade {index}",
+                "2026 Cadillac Escalade 10 km",
+                profile,
+            )
+            listing.image_urls = [f"https://images.example.com/{index}.jpg"]
+            listings.append(listing)
+
+        class FakeProvider:
+            def search(self, _profile):
+                return listings, []
+
+        class FakeVision:
+            configured = True
+            disabled_reason = ""
+            max_candidates_per_run = 2
+
+            def __init__(self):
+                self.calls = 0
+
+            def signature(self, listing, features):
+                return listing.fingerprint + ":" + ",".join(features)
+
+            def verify(self, listing, features, **kwargs):
+                self.calls += 1
+                return VisionOutcome(attempted=True, status="succeeded")
+
+        with tempfile.TemporaryDirectory() as td:
+            store = Store(f"{td}/db.sqlite")
+            search_id, _, _ = store.create_search(profile, owner_id="dmitry")
+            vision = FakeVision()
+            result = run_search(
+                store,
+                search_id,
+                profile,
+                provider=FakeProvider(),
+                vision=vision,
+            )
+            self.assertEqual(vision.calls, 2)
+            self.assertEqual(result["vision_candidates"], 2)
+
+    def test_store_migrates_legacy_search_table(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = f"{td}/legacy.sqlite"
+            with sqlite3.connect(path) as db:
+                db.executescript(
+                    """
+                    CREATE TABLE searches (
+                      id TEXT PRIMARY KEY, owner_token TEXT NOT NULL, profile_json TEXT NOT NULL,
+                      created_at TEXT NOT NULL, updated_at TEXT NOT NULL, next_run_at TEXT,
+                      last_run_at TEXT, telegram_chat_id TEXT, telegram_bind_code TEXT,
+                      enabled INTEGER NOT NULL DEFAULT 1
+                    );
+                    CREATE TABLE listings (
+                      search_id TEXT NOT NULL, fingerprint TEXT NOT NULL, payload_json TEXT NOT NULL,
+                      first_seen_at TEXT NOT NULL, last_seen_at TEXT NOT NULL,
+                      last_notified_price REAL, PRIMARY KEY(search_id, fingerprint)
+                    );
+                    CREATE INDEX idx_searches_due ON searches(enabled, next_run_at);
+                    """
+                )
+            store = Store(path)
+            with store.conn() as db:
+                columns = {row["name"] for row in db.execute("PRAGMA table_info(searches)")}
+            self.assertTrue({"owner_id", "expires_at", "run_lock_until"}.issubset(columns))
 
     def test_store_deduplicates_same_listing(self):
         with tempfile.TemporaryDirectory() as td:
