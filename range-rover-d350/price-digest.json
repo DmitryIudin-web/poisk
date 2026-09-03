@@ -1,84 +1,8 @@
 {
-  "candidates": [
-    {
-      "listing": {
-        "advertised_price": 24190000,
-        "cash_price": null,
-        "commercial_recycling_fee_status": null,
-        "dcc": {
-          "source_text": null,
-          "value": null
-        },
-        "epts_status": null,
-        "exterior_black": {
-          "source_text": null,
-          "value": null
-        },
-        "image_url": "https://s.auto.drom.ru/photo/v2/qu3PlpdRrr5A4e3yr49TBbvxATsVukM77GyV0alHrmQ34jidBh8nCxlTSND9_HVfR47OB6cihtAPx6YY/ttn.jpg",
-        "in_stock": {
-          "source_text": null,
-          "value": null
-        },
-        "interior_black": {
-          "source_text": null,
-          "value": null
-        },
-        "is_new": {
-          "source_text": "новый",
-          "value": true
-        },
-        "listing_id": "642972023",
-        "location": "Москва",
-        "mileage_km": 20,
-        "model_match": {
-          "source_text": "Land Rover Range Rover",
-          "value": true
-        },
-        "powertrain_match": {
-          "source_text": "D350",
-          "value": true
-        },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
-        "rear_seat_entertainment": {
-          "source_text": null,
-          "value": null
-        },
-        "region": "russia",
-        "sold": {
-          "source_text": null,
-          "value": null
-        },
-        "source": "drom",
-        "source_market": "russia",
-        "steering_left": {
-          "source_text": null,
-          "value": null
-        },
-        "target_id": "range-rover-l460-d350-autobiography-2026",
-        "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 24 190 000 руб",
-        "top_trim": {
-          "source_text": "Autobiography",
-          "value": true
-        },
-        "url": "https://auto.drom.ru/moscow/land_rover/range_rover/642972023.html",
-        "vin": null,
-        "year": 2026
-      },
-      "missing": [
-        "rear_seat_entertainment",
-        "exterior_black",
-        "interior_black",
-        "in_stock",
-        "cash_price"
-      ],
-      "status": "candidate"
-    }
-  ],
+  "candidates": [],
   "confirmed": [],
   "failed_sources": 4,
-  "observed_at": "2026-09-03T04:39:13Z",
+  "observed_at": "2026-09-03T09:51:43Z",
   "successful_sources": 5,
   "target_id": "range-rover-l460-d350-autobiography-2026",
   "target_name": "Range Rover L460 D350 Autobiography 2026",
