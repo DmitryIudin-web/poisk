@@ -2088,7 +2088,7 @@
       "status": "candidate"
     },
     "autoru:1133536638-783fd03d": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -2482,7 +2482,7 @@
       "status": "irrelevant"
     },
     "autoru:1133712763-19a44a6f": {
-      "last_seen_at": "2026-09-03T18:38:25Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -2806,7 +2806,7 @@
       "status": "candidate"
     },
     "autoru:1133787212-b214a74f": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -3206,46 +3206,46 @@
       "status": "candidate"
     },
     "autoru:1133860600-a6cf5a7d": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
-        "advertised_price": 6190000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
-          "source_text": "Адаптивная подвеска",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://photo.auto.ru/photo/get-autoru-vos/17006437/w86kciNlj5c0XbiaTwvnB7sLFW29gS-7mOBpUfKlZU8t81eXQiyD3FfKevXW9euuoVhDo7C8krl3tCbvVe4aIC7AZl6gd-e53X1CoOK1MNTaNXGz3ckliYOeO6QR0MS5tKC6ar8gk6E51Mj3Rj_csW77jLz-uoVo6-0PKkK-BeBhErw/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "под заказ",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "Neхtline - профессиональный поставщик но",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "новый",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1133860600-a6cf5a7d",
-        "location": "Самара",
-        "mileage_km": 0,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont Pro",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
           "source_text": null,
           "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
@@ -3263,23 +3263,28 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 190 000 рублей на Авто.ру!",
+        "title": "Volkswagen Teramont Pro 2026",
         "top_trim": {
-          "source_text": "Peak",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1133860600-a6cf5a7d",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
         "exterior_black",
         "interior_black",
+        "mileage",
         "in_stock"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "autoru:1133872255-38d5f2d8": {
       "last_seen_at": "2026-09-02T18:42:22Z",
@@ -3768,7 +3773,7 @@
       "status": "candidate"
     },
     "autoru:1133903339-9515dc3c": {
-      "last_seen_at": "2026-09-07T16:27:32Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -6318,7 +6323,7 @@
       "status": "candidate"
     },
     "autoru:1134029104-2a9a649a": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -6722,8 +6727,89 @@
       "removed": false,
       "status": "candidate"
     },
+    "autoru:1134041462-1884a56c": {
+      "last_seen_at": "2026-09-12T17:09:27Z",
+      "listing": {
+        "advertised_price": null,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "image_url": null,
+        "in_stock": {
+          "source_text": null,
+          "value": null
+        },
+        "interior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "is_new": {
+          "source_text": null,
+          "value": null
+        },
+        "listing_id": "1134041462-1884a56c",
+        "location": null,
+        "mileage_km": null,
+        "model_match": {
+          "source_text": null,
+          "value": null
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": null,
+        "price_qualifier": null,
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoru",
+        "source_market": "unknown",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "teramont-pro-2026",
+        "target_name": "Volkswagen Teramont Pro 2026",
+        "title": "Volkswagen Teramont Pro 2026",
+        "top_trim": {
+          "source_text": null,
+          "value": null
+        },
+        "url": "https://auto.ru/cars/used/sale/volkswagen/teramont/1134041462-1884a56c",
+        "vin": null,
+        "year": null
+      },
+      "misses": 0,
+      "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
+        "exterior_black",
+        "interior_black",
+        "mileage",
+        "in_stock"
+      ],
+      "removed": false,
+      "status": "candidate"
+    },
     "autoru:1134074245-69876485": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -7128,7 +7214,7 @@
       "status": "candidate"
     },
     "autoru:1134074281-c40fbc78": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -7209,9 +7295,9 @@
       "status": "candidate"
     },
     "autoru:1134074347-007e1b6a": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
-        "advertised_price": 6599000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -7220,35 +7306,35 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/17971448/3204955ff7391b6e8a8afd98f0fddded/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "В наличии",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "новый автомобиль",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1134074347-007e1b6a",
-        "location": "Москва",
-        "mileage_km": 0,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont Pro",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
           "source_text": null,
           "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
@@ -7266,22 +7352,28 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 599 000 рублей на Авто.ру!",
+        "title": "Volkswagen Teramont Pro 2026",
         "top_trim": {
-          "source_text": "Peak",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134074347-007e1b6a",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
         "exterior_black",
-        "interior_black"
+        "interior_black",
+        "mileage",
+        "in_stock"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "autoru:1134075204-2d1e07a2": {
       "last_seen_at": "2026-09-11T00:10:17Z",
@@ -7845,7 +7937,7 @@
       "status": "candidate"
     },
     "autoru:1134086949-f562c2f6": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -7926,82 +8018,7 @@
       "status": "candidate"
     },
     "autoru:1134086972-786450ef": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
-      "listing": {
-        "advertised_price": 6599000,
-        "cash_price": null,
-        "commercial_recycling_fee_status": null,
-        "dcc": {
-          "source_text": null,
-          "value": null
-        },
-        "epts_status": null,
-        "exterior_black": {
-          "source_text": "",
-          "value": false
-        },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/15688781/cc1071080cdf9c3dec235435bb37ac48/1200x900",
-        "in_stock": {
-          "source_text": "В наличии",
-          "value": true
-        },
-        "interior_black": {
-          "source_text": "",
-          "value": false
-        },
-        "is_new": {
-          "source_text": "новый автомобиль",
-          "value": true
-        },
-        "listing_id": "1134086972-786450ef",
-        "location": "Москва",
-        "mileage_km": 0,
-        "model_match": {
-          "source_text": "Volkswagen Teramont Pro",
-          "value": true
-        },
-        "powertrain_match": {
-          "source_text": null,
-          "value": null
-        },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
-        "rear_seat_entertainment": {
-          "source_text": null,
-          "value": null
-        },
-        "region": "russia",
-        "sold": {
-          "source_text": null,
-          "value": null
-        },
-        "source": "autoru",
-        "source_market": "unknown",
-        "steering_left": {
-          "source_text": null,
-          "value": null
-        },
-        "target_id": "teramont-pro-2026",
-        "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 599 000 рублей на Авто.ру!",
-        "top_trim": {
-          "source_text": "Peak",
-          "value": true
-        },
-        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134086972-786450ef",
-        "vin": null,
-        "year": 2026
-      },
-      "misses": 0,
-      "missing": [
-        "exterior_black",
-        "interior_black"
-      ],
-      "removed": false,
-      "status": "irrelevant"
-    },
-    "autoru:1134086981-eb2ae486": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8028,7 +8045,7 @@
           "source_text": null,
           "value": null
         },
-        "listing_id": "1134086981-eb2ae486",
+        "listing_id": "1134086972-786450ef",
         "location": null,
         "mileage_km": null,
         "model_match": {
@@ -8063,7 +8080,7 @@
           "source_text": null,
           "value": null
         },
-        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134086981-eb2ae486",
+        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134086972-786450ef",
         "vin": null,
         "year": null
       },
@@ -8081,8 +8098,83 @@
       "removed": false,
       "status": "candidate"
     },
+    "autoru:1134086981-eb2ae486": {
+      "last_seen_at": "2026-09-12T17:09:27Z",
+      "listing": {
+        "advertised_price": 6599000,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": "",
+          "value": false
+        },
+        "image_url": "https://avatars.avto.ru/get-autoru-vos/16164821/84fd02215d03d93ccce2d17916e7398e/1200x900",
+        "in_stock": {
+          "source_text": "В наличии",
+          "value": true
+        },
+        "interior_black": {
+          "source_text": "",
+          "value": false
+        },
+        "is_new": {
+          "source_text": "новый автомобиль",
+          "value": true
+        },
+        "listing_id": "1134086981-eb2ae486",
+        "location": "Москва",
+        "mileage_km": 0,
+        "model_match": {
+          "source_text": "Volkswagen Teramont Pro",
+          "value": true
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": "RUB",
+        "price_qualifier": "unqualified",
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoru",
+        "source_market": "unknown",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "teramont-pro-2026",
+        "target_name": "Volkswagen Teramont Pro 2026",
+        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 599 000 рублей на Авто.ру!",
+        "top_trim": {
+          "source_text": "Peak",
+          "value": true
+        },
+        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134086981-eb2ae486",
+        "vin": null,
+        "year": 2026
+      },
+      "misses": 0,
+      "missing": [
+        "exterior_black",
+        "interior_black"
+      ],
+      "removed": false,
+      "status": "irrelevant"
+    },
     "autoru:1134086991-e6a8dd30": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8244,7 +8336,7 @@
       "status": "candidate"
     },
     "autoru:1134087021-08459c72": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8325,9 +8417,9 @@
       "status": "candidate"
     },
     "autoru:1134087024-08db3b4b": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
-        "advertised_price": 6599000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -8336,35 +8428,35 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/19815194/52353962159d26a229d3a69c460caf5c/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "В наличии",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "новый автомобиль",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1134087024-08db3b4b",
-        "location": "Москва",
-        "mileage_km": 0,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont Pro",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
           "source_text": null,
           "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
@@ -8382,25 +8474,31 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 599 000 рублей на Авто.ру!",
+        "title": "Volkswagen Teramont Pro 2026",
         "top_trim": {
-          "source_text": "Peak",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134087024-08db3b4b",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
         "exterior_black",
-        "interior_black"
+        "interior_black",
+        "mileage",
+        "in_stock"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "autoru:1134087029-4a0c5bbe": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6599000,
         "cash_price": null,
@@ -8475,9 +8573,9 @@
       "status": "irrelevant"
     },
     "autoru:1134087030-019b3801": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
-        "advertised_price": 6599000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -8486,35 +8584,35 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/20394542/f5ef30fd6c6cf7dfcb51b71ccaa1e112/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "В наличии",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "новый автомобиль",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1134087030-019b3801",
-        "location": "Москва",
-        "mileage_km": 0,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont Pro",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
           "source_text": null,
           "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
@@ -8532,25 +8630,31 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 599 000 рублей на Авто.ру!",
+        "title": "Volkswagen Teramont Pro 2026",
         "top_trim": {
-          "source_text": "Peak",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134087030-019b3801",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
         "exterior_black",
-        "interior_black"
+        "interior_black",
+        "mileage",
+        "in_stock"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "autoru:1134087031-de8dc333": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8631,7 +8735,82 @@
       "status": "candidate"
     },
     "autoru:1134087032-0232c053": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
+      "listing": {
+        "advertised_price": 6599000,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": "",
+          "value": false
+        },
+        "image_url": "https://avatars.avto.ru/get-autoru-vos/2154580/9c65565c57a4fe5b394c0a0d8f7eccfc/1200x900",
+        "in_stock": {
+          "source_text": "В наличии",
+          "value": true
+        },
+        "interior_black": {
+          "source_text": "",
+          "value": false
+        },
+        "is_new": {
+          "source_text": "новый автомобиль",
+          "value": true
+        },
+        "listing_id": "1134087032-0232c053",
+        "location": "Москва",
+        "mileage_km": 0,
+        "model_match": {
+          "source_text": "Volkswagen Teramont Pro",
+          "value": true
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": "RUB",
+        "price_qualifier": "unqualified",
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoru",
+        "source_market": "unknown",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "teramont-pro-2026",
+        "target_name": "Volkswagen Teramont Pro 2026",
+        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 599 000 рублей на Авто.ру!",
+        "top_trim": {
+          "source_text": "Peak",
+          "value": true
+        },
+        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134087032-0232c053",
+        "vin": null,
+        "year": 2026
+      },
+      "misses": 0,
+      "missing": [
+        "exterior_black",
+        "interior_black"
+      ],
+      "removed": false,
+      "status": "irrelevant"
+    },
+    "autoru:1134090995-912e6a78": {
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8658,7 +8837,7 @@
           "source_text": null,
           "value": null
         },
-        "listing_id": "1134087032-0232c053",
+        "listing_id": "1134090995-912e6a78",
         "location": null,
         "mileage_km": null,
         "model_match": {
@@ -8693,7 +8872,7 @@
           "source_text": null,
           "value": null
         },
-        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134087032-0232c053",
+        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134090995-912e6a78",
         "vin": null,
         "year": null
       },
@@ -8712,7 +8891,7 @@
       "status": "candidate"
     },
     "autoru:1134110870-d7d2716b": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8793,9 +8972,9 @@
       "status": "candidate"
     },
     "autoru:1134111547-8ceaf93c": {
-      "last_seen_at": "2026-09-12T05:47:04Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
-        "advertised_price": 6667000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -8804,35 +8983,35 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/2124522/9934c2722c3a3aba31e1ed567bb58d02/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "В наличии",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "новый автомобиль",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1134111547-8ceaf93c",
-        "location": "Москва",
-        "mileage_km": 0,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont Pro",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
           "source_text": null,
           "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
@@ -8850,22 +9029,190 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Смотрите, какая машина: новый Volkswagen Teramont II (China Market) Pro 2026 года за 6 667 000 рублей на Авто.ру!",
+        "title": "Volkswagen Teramont Pro 2026",
         "top_trim": {
-          "source_text": "Peak",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134111547-8ceaf93c",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
         "exterior_black",
-        "interior_black"
+        "interior_black",
+        "mileage",
+        "in_stock"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
+    },
+    "autoru:1134119728-40c67d70": {
+      "last_seen_at": "2026-09-12T17:09:27Z",
+      "listing": {
+        "advertised_price": null,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "image_url": null,
+        "in_stock": {
+          "source_text": null,
+          "value": null
+        },
+        "interior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "is_new": {
+          "source_text": null,
+          "value": null
+        },
+        "listing_id": "1134119728-40c67d70",
+        "location": null,
+        "mileage_km": null,
+        "model_match": {
+          "source_text": null,
+          "value": null
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": null,
+        "price_qualifier": null,
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoru",
+        "source_market": "unknown",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "teramont-pro-2026",
+        "target_name": "Volkswagen Teramont Pro 2026",
+        "title": "Volkswagen Teramont Pro 2026",
+        "top_trim": {
+          "source_text": null,
+          "value": null
+        },
+        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134119728-40c67d70",
+        "vin": null,
+        "year": null
+      },
+      "misses": 0,
+      "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
+        "exterior_black",
+        "interior_black",
+        "mileage",
+        "in_stock"
+      ],
+      "removed": false,
+      "status": "candidate"
+    },
+    "autoru:1134120222-2b8714a7": {
+      "last_seen_at": "2026-09-12T17:09:27Z",
+      "listing": {
+        "advertised_price": null,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "image_url": null,
+        "in_stock": {
+          "source_text": null,
+          "value": null
+        },
+        "interior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "is_new": {
+          "source_text": null,
+          "value": null
+        },
+        "listing_id": "1134120222-2b8714a7",
+        "location": null,
+        "mileage_km": null,
+        "model_match": {
+          "source_text": null,
+          "value": null
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": null,
+        "price_qualifier": null,
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoru",
+        "source_market": "unknown",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "teramont-pro-2026",
+        "target_name": "Volkswagen Teramont Pro 2026",
+        "title": "Volkswagen Teramont Pro 2026",
+        "top_trim": {
+          "source_text": null,
+          "value": null
+        },
+        "url": "https://auto.ru/cars/new/group/volkswagen/teramont/24068818/24072830/1134120222-2b8714a7",
+        "vin": null,
+        "year": null
+      },
+      "misses": 0,
+      "missing": [
+        "model_match",
+        "top_trim",
+        "dcc",
+        "year",
+        "exterior_black",
+        "interior_black",
+        "mileage",
+        "in_stock"
+      ],
+      "removed": false,
+      "status": "candidate"
     },
     "avito:7829872220": {
       "last_seen_at": "2026-09-10T04:46:40Z",
@@ -15059,7 +15406,7 @@
       "status": "irrelevant"
     },
     "drom:212801873": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -15429,7 +15776,7 @@
       "status": "irrelevant"
     },
     "drom:246285364": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 5600000,
         "cash_price": null,
@@ -15577,7 +15924,7 @@
       "status": "irrelevant"
     },
     "drom:253831184": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6450000,
         "cash_price": null,
@@ -15873,7 +16220,7 @@
       "status": "irrelevant"
     },
     "drom:281897677": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -16169,7 +16516,7 @@
       "status": "irrelevant"
     },
     "drom:302153524": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -17575,7 +17922,7 @@
       "status": "irrelevant"
     },
     "drom:417036499": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -17797,7 +18144,7 @@
       "status": "irrelevant"
     },
     "drom:428658783": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -17854,7 +18201,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Volkswagen Teramont 2026, 6 340 000 руб",
+        "title": "Продажа Фольксваген Терамонт 2026, 6 340 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -18989,7 +19336,7 @@
       "status": "candidate"
     },
     "drom:558961470": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6450000,
         "cash_price": null,
@@ -19211,7 +19558,7 @@
       "status": "irrelevant"
     },
     "drom:573309445": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6450000,
         "cash_price": null,
@@ -19268,7 +19615,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Volkswagen Teramont 2026, 6 450 000 руб",
+        "title": "Продажа Фольксваген Терамонт 2026, 6 450 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -19804,7 +20151,7 @@
       "status": "irrelevant"
     },
     "drom:624301534": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6450000,
         "cash_price": null,
@@ -19861,7 +20208,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Volkswagen Teramont 2026, 6 450 000 руб",
+        "title": "Продажа Фольксваген Терамонт 2026, 6 450 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -20100,7 +20447,7 @@
       "status": "irrelevant"
     },
     "drom:647264868": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -20157,7 +20504,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Volkswagen Teramont 2026, 6 340 000 руб",
+        "title": "Продажа Фольксваген Терамонт 2026, 6 340 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -21211,7 +21558,7 @@
       "status": "irrelevant"
     },
     "drom:742092857": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6450000,
         "cash_price": null,
@@ -21242,7 +21589,7 @@
         "location": "Москва",
         "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont 2026 год в Москве, 4 вд, бензиновый двигатель, новый авто, АКПП | Объявление о продаже Фольксваген Т",
+          "source_text": "Volkswagen Teramont 2026 год в Москве, 4 вд, бензиновый двигатель, новый авто, АКПП | Объявление о продаже Volkswagen Te",
           "value": false
         },
         "powertrain_match": {
@@ -21268,7 +21615,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Фольксваген Терамонт 2026, 6 450 000 руб",
+        "title": "Продажа Volkswagen Teramont 2026, 6 450 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -21507,7 +21854,7 @@
       "status": "irrelevant"
     },
     "drom:760433563": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -21564,7 +21911,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Фольксваген Терамонт 2026, 6 340 000 руб",
+        "title": "Продажа Volkswagen Teramont 2026, 6 340 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -21655,7 +22002,7 @@
       "status": "irrelevant"
     },
     "drom:780701075": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6450000,
         "cash_price": null,
@@ -21686,7 +22033,7 @@
         "location": "Москва",
         "mileage_km": null,
         "model_match": {
-          "source_text": "Volkswagen Teramont 2026 в Москве, 4вд, АКПП | Объявление о продаже Фольксваген Терамонт 2026, 6 450 000 руб., Москва, 2",
+          "source_text": "Volkswagen Teramont 2026 в Москве, 4вд, АКПП | Объявление о продаже Volkswagen Teramont 2026, 6 450 000 руб., Москва, 2.",
           "value": false
         },
         "powertrain_match": {
@@ -21712,7 +22059,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Фольксваген Терамонт 2026, 6 450 000 руб",
+        "title": "Продажа Volkswagen Teramont 2026, 6 450 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -22618,7 +22965,7 @@
       "status": "irrelevant"
     },
     "drom:879253248": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -23215,7 +23562,7 @@
       "status": "irrelevant"
     },
     "drom:904371694": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -23246,7 +23593,7 @@
         "location": "Москва",
         "mileage_km": null,
         "model_match": {
-          "source_text": "Фольксваген Терамонт 2026 в Санкт-Петербурге, акпп, бензиновый, новая, 2 литра, 4WD | Объявление о продаже Фольксваген Т",
+          "source_text": "Фольксваген Терамонт 2026 в Санкт-Петербурге, акпп, бензиновый, новая, 2 литра, 4WD | Объявление о продаже Volkswagen Te",
           "value": false
         },
         "powertrain_match": {
@@ -23272,7 +23619,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Фольксваген Терамонт 2026, 6 340 000 руб",
+        "title": "Продажа Volkswagen Teramont 2026, 6 340 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -23437,7 +23784,7 @@
       "status": "irrelevant"
     },
     "drom:925746105": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -23494,7 +23841,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Volkswagen Teramont 2026, 6 340 000 руб",
+        "title": "Продажа Фольксваген Терамонт 2026, 6 340 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -23511,7 +23858,7 @@
       "status": "irrelevant"
     },
     "drom:930986174": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 7300000,
         "cash_price": null,
@@ -23585,7 +23932,7 @@
       "status": "irrelevant"
     },
     "drom:939860647": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 6340000,
         "cash_price": null,
@@ -23659,7 +24006,7 @@
       "status": "irrelevant"
     },
     "drom:940649098": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 5400000,
         "cash_price": null,
@@ -23733,7 +24080,7 @@
       "status": "irrelevant"
     },
     "kolesa:171542898": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 24000000,
         "cash_price": null,
@@ -23809,7 +24156,7 @@
       "status": "irrelevant"
     },
     "kolesa:171657043": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 24000000,
         "cash_price": null,
@@ -24265,7 +24612,7 @@
       "status": "irrelevant"
     },
     "kolesa:198197050": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 21700000,
         "cash_price": null,
@@ -24341,7 +24688,7 @@
       "status": "irrelevant"
     },
     "kolesa:200176267": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 18000000,
         "cash_price": null,
@@ -24646,7 +24993,7 @@
       "status": "irrelevant"
     },
     "kolesa:212685801": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 28000000,
         "cash_price": null,
@@ -24798,7 +25145,7 @@
       "status": "irrelevant"
     },
     "kolesa:217370698": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 14555555,
         "cash_price": null,
@@ -24875,7 +25222,7 @@
       "status": "irrelevant"
     },
     "kolesa:219916245": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 26690000,
         "cash_price": null,
@@ -25027,7 +25374,7 @@
       "status": "irrelevant"
     },
     "kolesa:222664810": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 20500000,
         "cash_price": null,
@@ -25179,7 +25526,7 @@
       "status": "irrelevant"
     },
     "kolesa:225928867": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 21500000,
         "cash_price": null,
@@ -25255,7 +25602,7 @@
       "status": "irrelevant"
     },
     "kolesa:225938537": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 17500000,
         "cash_price": null,
@@ -25483,7 +25830,7 @@
       "status": "irrelevant"
     },
     "kolesa:226716897": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 27500000,
         "cash_price": null,
@@ -25559,7 +25906,7 @@
       "status": "irrelevant"
     },
     "kolesa:226890435": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 21500000,
         "cash_price": null,
@@ -25635,7 +25982,7 @@
       "status": "irrelevant"
     },
     "kolesa:227242670": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 22790000,
         "cash_price": null,
@@ -25711,7 +26058,7 @@
       "status": "irrelevant"
     },
     "kolesa:227317763": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 21000000,
         "cash_price": null,
@@ -25787,7 +26134,7 @@
       "status": "irrelevant"
     },
     "kolesa:227413712": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 20700000,
         "cash_price": null,
@@ -25863,7 +26210,7 @@
       "status": "irrelevant"
     },
     "kolesa:227501940": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 28500000,
         "cash_price": null,
@@ -26016,7 +26363,7 @@
       "status": "irrelevant"
     },
     "kolesa:228285176": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 19100000,
         "cash_price": null,
@@ -26093,7 +26440,7 @@
       "status": "irrelevant"
     },
     "kolesa:228435895": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 18800000,
         "cash_price": null,
@@ -26929,7 +27276,7 @@
       "status": "irrelevant"
     },
     "kolesa:230252291": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 21000000,
         "cash_price": null,
@@ -27005,7 +27352,7 @@
       "status": "irrelevant"
     },
     "kolesa:230347054": {
-      "last_seen_at": "2026-09-12T14:06:47Z",
+      "last_seen_at": "2026-09-12T17:09:27Z",
       "listing": {
         "advertised_price": 20000000,
         "cash_price": null,
@@ -27147,7 +27494,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 68,
+      "misses": 69,
       "missing": [
         "model_match",
         "exterior_black"
@@ -27222,7 +27569,7 @@
         "vin": null,
         "year": 2022
       },
-      "misses": 64,
+      "misses": 65,
       "missing": [
         "model_match",
         "year",
@@ -27298,7 +27645,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 68,
+      "misses": 69,
       "missing": [
         "model_match",
         "exterior_black"
@@ -27373,7 +27720,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 71,
+      "misses": 72,
       "missing": [
         "model_match",
         "exterior_black",
@@ -27449,7 +27796,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 5,
+      "misses": 6,
       "missing": [
         "model_match",
         "exterior_black"
@@ -27524,7 +27871,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 5,
+      "misses": 6,
       "missing": [
         "model_match",
         "exterior_black"
@@ -27599,7 +27946,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 2,
+      "misses": 3,
       "missing": [
         "model_match",
         "exterior_black",
@@ -27675,7 +28022,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 6,
+      "misses": 7,
       "missing": [
         "model_match",
         "exterior_black",
@@ -27752,7 +28099,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 6,
+      "misses": 7,
       "missing": [
         "exterior_black"
       ],
@@ -27826,7 +28173,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 6,
+      "misses": 7,
       "missing": [
         "model_match",
         "exterior_black"
@@ -27901,7 +28248,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 5,
+      "misses": 6,
       "missing": [
         "model_match",
         "exterior_black"
@@ -27976,7 +28323,7 @@
         "vin": null,
         "year": 2026
       },
-      "misses": 67,
+      "misses": 68,
       "missing": [
         "exterior_black"
       ],
