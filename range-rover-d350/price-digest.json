@@ -109,7 +109,7 @@
         "location": "Москва",
         "mileage_km": null,
         "model_match": {
-          "source_text": "Range Rover",
+          "source_text": "Land Rover Range Rover",
           "value": true
         },
         "powertrain_match": {
@@ -135,7 +135,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 23 800 000 руб",
+        "title": "Продажа Land Rover Range Rover 2026, 23 800 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -158,7 +158,7 @@
     },
     {
       "listing": {
-        "advertised_price": 24360000,
+        "advertised_price": 26995000,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -170,7 +170,7 @@
           "source_text": null,
           "value": null
         },
-        "image_url": "https://s.auto.drom.ru/photo/v2/LI6eGT-CNLg4AS2yarZFAH-kTxdFxg7xDlBCS3vJzgg6m3BGRA9B1c4RF3zgTta_kDy6wfN5rqlfO65C/ttn.jpg",
+        "image_url": "https://s.auto.drom.ru/photo/v2/rN1R-dDhSCNlqFYP73EQxOsNcASBpZRI6YgZNxzFcPzsjOM-tCbvDarS-4I5cvvK2EbXIJBsePL7bmnW/ttn.jpg",
         "in_stock": {
           "source_text": "в наличии",
           "value": true
@@ -183,9 +183,9 @@
           "source_text": "с пробегом",
           "value": false
         },
-        "listing_id": "485065251",
+        "listing_id": "368978803",
         "location": "Москва",
-        "mileage_km": 66,
+        "mileage_km": null,
         "model_match": {
           "source_text": "Land Rover Range Rover",
           "value": true
@@ -197,8 +197,8 @@
         "price_currency": "RUB",
         "price_qualifier": "unqualified",
         "rear_seat_entertainment": {
-          "source_text": "мониторы для задних пассажиров",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "region": "russia",
         "sold": {
@@ -213,27 +213,29 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 24 360 000 руб",
+        "title": "Продажа Land Rover Range Rover 2026, 26 995 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
         },
-        "url": "https://auto.drom.ru/moscow/land_rover/range_rover/485065251.html",
+        "url": "https://auto.drom.ru/spb/land_rover/range_rover/368978803.html",
         "vin": null,
         "year": 2026
       },
       "missing": [
+        "rear_seat_entertainment",
         "exterior_black",
         "interior_black",
+        "mileage",
         "cash_price"
       ],
       "status": "candidate"
     }
   ],
   "confirmed": [],
-  "failed_sources": 4,
-  "observed_at": "2026-09-11T21:45:10Z",
-  "successful_sources": 5,
+  "failed_sources": 3,
+  "observed_at": "2026-09-12T00:19:30Z",
+  "successful_sources": 6,
   "target_id": "range-rover-l460-d350-autobiography-2026",
   "target_name": "Range Rover L460 D350 Autobiography 2026",
   "version": 1
