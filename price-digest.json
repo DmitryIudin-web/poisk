@@ -57,7 +57,7 @@
         },
         "target_id": "teramont-pro-2026",
         "target_name": "Volkswagen Teramont Pro 2026",
-        "title": "Продажа Фольксваген Терамонт 2026, 6 608 000 руб",
+        "title": "Продажа Volkswagen Teramont 2026, 6 608 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -76,11 +76,88 @@
         "cash_price"
       ],
       "status": "candidate"
+    },
+    {
+      "listing": {
+        "advertised_price": 6609000,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "image_url": "https://s.auto.drom.ru/photo/v2/oQj8BLjBE7_Sow_JZLaCxWtyRM9zmsqrbT7p3UMKYY9LhWdf-N9aegMLkriqbpqfLZnS9l_i545R3lJJ/ttn.jpg",
+        "in_stock": {
+          "source_text": null,
+          "value": null
+        },
+        "interior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "is_new": {
+          "source_text": "с пробегом",
+          "value": false
+        },
+        "listing_id": "712823931",
+        "location": "Москва",
+        "mileage_km": null,
+        "model_match": {
+          "source_text": "Volkswagen Teramont Pro",
+          "value": true
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": "RUB",
+        "price_qualifier": "unqualified",
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "drom",
+        "source_market": "unknown",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "teramont-pro-2026",
+        "target_name": "Volkswagen Teramont Pro 2026",
+        "title": "Продажа Фольксваген Терамонт 2026, 6 609 000 руб",
+        "top_trim": {
+          "source_text": null,
+          "value": null
+        },
+        "url": "https://auto.drom.ru/moscow/volkswagen/teramont/712823931.html",
+        "vin": null,
+        "year": 2026
+      },
+      "missing": [
+        "top_trim",
+        "dcc",
+        "exterior_black",
+        "interior_black",
+        "mileage",
+        "in_stock",
+        "cash_price"
+      ],
+      "status": "candidate"
     }
   ],
   "confirmed": [],
   "failed_sources": 2,
-  "observed_at": "2026-09-30T13:42:54Z",
+  "observed_at": "2026-09-30T19:19:27Z",
   "successful_sources": 3,
   "target_id": "teramont-pro-2026",
   "target_name": "Volkswagen Teramont Pro 2026",
