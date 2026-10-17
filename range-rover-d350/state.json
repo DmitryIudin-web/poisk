@@ -4,9 +4,9 @@
   ],
   "listings": {
     "range-rover-l460-d350-autobiography-2026:autoru:1124487681-90320d5e": {
-      "last_seen_at": "2026-10-02T08:38:07Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
-        "advertised_price": 22000000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -15,40 +15,40 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/5937654/e2e293e7b26ce9aa0130aa1f8d9ff992/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "ПОД ЗАКАЗ",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "с пробегом",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1124487681-90320d5e",
-        "location": "Москва",
-        "mileage_km": 1,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Land Rover Range Rover",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
-          "source_text": "D350",
-          "value": true
+          "source_text": null,
+          "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
         },
-        "region": "russia",
+        "region": "unknown",
         "sold": {
           "source_text": null,
           "value": null
@@ -61,23 +61,30 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Смотрите, какая машина: Land Rover Range Rover V D350 MHEV 2026 года за 22 000 000 рублей на Авто.ру!",
+        "title": "Range Rover L460 D350 Autobiography 2026",
         "top_trim": {
-          "source_text": "Autobiography",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/used/sale/land_rover/range_rover/1124487681-90320d5e",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "powertrain_match",
+        "top_trim",
+        "rear_seat_entertainment",
+        "year",
         "exterior_black",
         "interior_black",
-        "in_stock"
+        "mileage",
+        "in_stock",
+        "region"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1125671277-67e7fa8b": {
       "last_seen_at": "2026-09-30T13:44:00Z",
@@ -560,7 +567,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1131671574-aa2fafd0": {
-      "last_seen_at": "2026-10-13T11:50:15Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -1287,51 +1294,51 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1132235671-23ef04f0": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
-        "advertised_price": 24250000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
           "source_text": null,
           "value": null
         },
-        "epts_status": "valid",
+        "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/17637180/d0376aa9c4be2600d3da2e169767b868/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "В наличии",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "без ключ",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "новый",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1132235671-23ef04f0",
-        "location": "Москва",
+        "location": null,
         "mileage_km": null,
         "model_match": {
-          "source_text": "Land Rover Range Rover",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
-          "source_text": "D350",
-          "value": true
+          "source_text": null,
+          "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
         },
-        "region": "russia",
+        "region": "unknown",
         "sold": {
           "source_text": null,
           "value": null
@@ -1344,22 +1351,30 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Смотрите, какая машина: новый Land Rover Range Rover V D350 MHEV 2026 года за 24 250 000 рублей на Авто.ру!",
+        "title": "Range Rover L460 D350 Autobiography 2026",
         "top_trim": {
-          "source_text": "Autobiography",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/new/group/land_rover/range_rover/23093439/23094167/1132235671-23ef04f0",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "powertrain_match",
+        "top_trim",
+        "rear_seat_entertainment",
+        "year",
         "exterior_black",
-        "interior_black"
+        "interior_black",
+        "mileage",
+        "in_stock",
+        "region"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1132274246-23460cbc": {
       "last_seen_at": "2026-09-04T18:28:03Z",
@@ -1762,7 +1777,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1132630064-c5dd5f89": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -1928,7 +1943,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1132718589-9a7989a8": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -2260,7 +2275,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1132835483-77a132ae": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -2835,9 +2850,9 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133292943-efd9fb6e": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
-        "advertised_price": 25000000,
+        "advertised_price": null,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -2846,40 +2861,40 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
-        "image_url": "https://avatars.avto.ru/get-autoru-vos/15073297/b5cdc2379e942e6a0eeb2597eac8e0fe/1200x900",
+        "image_url": null,
         "in_stock": {
-          "source_text": "в наличии",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "interior_black": {
-          "source_text": "",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "is_new": {
-          "source_text": "с пробегом",
-          "value": false
+          "source_text": null,
+          "value": null
         },
         "listing_id": "1133292943-efd9fb6e",
-        "location": "Москва",
-        "mileage_km": 60,
+        "location": null,
+        "mileage_km": null,
         "model_match": {
-          "source_text": "Land Rover Range Rover",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "powertrain_match": {
-          "source_text": "D350",
-          "value": true
+          "source_text": null,
+          "value": null
         },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
+        "price_currency": null,
+        "price_qualifier": null,
         "rear_seat_entertainment": {
-          "source_text": "мониторы для задних пассажиров",
-          "value": true
+          "source_text": null,
+          "value": null
         },
-        "region": "russia",
+        "region": "unknown",
         "sold": {
           "source_text": null,
           "value": null
@@ -2892,22 +2907,30 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Смотрите, какая машина: Land Rover Range Rover V D350 MHEV 2026 года за 25 000 000 рублей на Авто.ру!",
+        "title": "Range Rover L460 D350 Autobiography 2026",
         "top_trim": {
-          "source_text": "Autobiography",
-          "value": true
+          "source_text": null,
+          "value": null
         },
         "url": "https://auto.ru/cars/used/sale/land_rover/range_rover/1133292943-efd9fb6e",
         "vin": null,
-        "year": 2026
+        "year": null
       },
       "misses": 0,
       "missing": [
+        "model_match",
+        "powertrain_match",
+        "top_trim",
+        "rear_seat_entertainment",
+        "year",
         "exterior_black",
-        "interior_black"
+        "interior_black",
+        "mileage",
+        "in_stock",
+        "region"
       ],
       "removed": false,
-      "status": "irrelevant"
+      "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133311770-cd818183": {
       "last_seen_at": "2026-09-08T14:34:54Z",
@@ -3159,7 +3182,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133350448-8a0bb8b5": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -3242,7 +3265,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133359846-b4cdeb67": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -3975,7 +3998,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133455192-fea48e60": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -4464,7 +4487,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133600551-8b23d19c": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -4630,7 +4653,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133632080-6e317d68": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -4947,7 +4970,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1133762014-0b318a2c": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -7791,7 +7814,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134098819-5ced603b": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -7874,7 +7897,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134110643-999a7e61": {
-      "last_seen_at": "2026-10-14T15:10:50Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8364,7 +8387,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134163613-600b03e4": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -8447,7 +8470,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134164182-6bd891ae": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -10160,7 +10183,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134276210-b6454bd8": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -10243,7 +10266,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134276211-75736107": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -10326,7 +10349,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1134277139-5e056853": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -10824,7 +10847,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1160065624-2b608f48": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -11389,7 +11412,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1160131600-abd94b5a": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -12211,7 +12234,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1160328984-033baac0": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -12294,7 +12317,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1160331477-dbe566e4": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -12377,9 +12400,9 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:autoru:1160376001-5e230fc4": {
-      "last_seen_at": "2026-10-17T09:21:44Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
-        "advertised_price": null,
+        "advertised_price": 26750000,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
         "dcc": {
@@ -12388,40 +12411,40 @@
         },
         "epts_status": null,
         "exterior_black": {
-          "source_text": null,
-          "value": null
+          "source_text": "",
+          "value": false
         },
-        "image_url": null,
+        "image_url": "https://photo.auto.ru/photo/get-autoru-vos/17435526/g-v0p-QPkEQ3sFFnniwkeev3gjcb9tNarXm8OP6VlLS1FgDFpKj96PxJFtV642QZkxUiTZM8DWLF3cLE1tsat2ePhEYlpVFOkw6BdJLQ6JDUY8ndvhrrN9cW4nREbUI5KUqHpJpu7bwZqPKOpQMD0MBp6d6cfymF8FOzIobOOqX8S-M/1200x900",
         "in_stock": {
-          "source_text": null,
-          "value": null
+          "source_text": "В наличии",
+          "value": true
         },
         "interior_black": {
           "source_text": null,
           "value": null
         },
         "is_new": {
-          "source_text": null,
-          "value": null
+          "source_text": "с пробегом",
+          "value": false
         },
         "listing_id": "1160376001-5e230fc4",
-        "location": null,
+        "location": "Санкт-Петербург",
         "mileage_km": null,
         "model_match": {
-          "source_text": null,
-          "value": null
+          "source_text": "Land Rover Range Rover",
+          "value": true
         },
         "powertrain_match": {
-          "source_text": null,
-          "value": null
+          "source_text": "D350",
+          "value": true
         },
-        "price_currency": null,
-        "price_qualifier": null,
+        "price_currency": "RUB",
+        "price_qualifier": "unqualified",
         "rear_seat_entertainment": {
           "source_text": null,
           "value": null
         },
-        "region": "unknown",
+        "region": "russia",
         "sold": {
           "source_text": null,
           "value": null
@@ -12434,30 +12457,21 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Range Rover L460 D350 Autobiography 2026",
+        "title": "Смотрите, какая машина: новый Land Rover Range Rover V D350 MHEV 2026 года за 26 750 000 рублей на Авто.ру!",
         "top_trim": {
-          "source_text": null,
-          "value": null
+          "source_text": "Autobiography",
+          "value": true
         },
         "url": "https://auto.ru/cars/new/group/land_rover/range_rover/23093439/23094167/1160376001-5e230fc4",
         "vin": null,
-        "year": null
+        "year": 2026
       },
       "misses": 0,
       "missing": [
-        "model_match",
-        "powertrain_match",
-        "top_trim",
-        "rear_seat_entertainment",
-        "year",
-        "exterior_black",
-        "interior_black",
-        "mileage",
-        "in_stock",
-        "region"
+        "exterior_black"
       ],
       "removed": false,
-      "status": "candidate"
+      "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:005c9b36-d24a-4416-8893-14df6e1c7758": {
       "last_seen_at": "2026-09-18T05:57:11Z",
@@ -12526,7 +12540,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 143,
+      "misses": 144,
       "missing": [
         "model_match",
         "interior_black"
@@ -12601,7 +12615,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 10,
+      "misses": 11,
       "missing": [
         "interior_black"
       ],
@@ -12675,7 +12689,7 @@
         "vin": "UMFELDBELEUCHTUNG",
         "year": null
       },
-      "misses": 82,
+      "misses": 83,
       "missing": [
         "model_match",
         "exterior_black",
@@ -12685,7 +12699,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:07635aa8-c6c2-4829-8b96-a64bf7d06ec2": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 166350,
         "cash_price": null,
@@ -12830,7 +12844,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 22,
+      "misses": 23,
       "missing": [
         "interior_black"
       ],
@@ -12904,7 +12918,7 @@
         "vin": "UMFELDBELEUCHTUNG",
         "year": null
       },
-      "misses": 194,
+      "misses": 195,
       "missing": [
         "model_match",
         "interior_black"
@@ -12979,7 +12993,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 37,
+      "misses": 38,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -13054,7 +13068,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 206,
+      "misses": 207,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -13131,7 +13145,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 8,
+      "misses": 9,
       "missing": [
         "model_match"
       ],
@@ -13205,7 +13219,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 53,
+      "misses": 54,
       "missing": [
         "model_match",
         "interior_black"
@@ -13280,7 +13294,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 41,
+      "misses": 42,
       "missing": [
         "powertrain_match",
         "exterior_black"
@@ -13355,7 +13369,7 @@
         "vin": "VERBRAUCHSANGABEN",
         "year": null
       },
-      "misses": 53,
+      "misses": 54,
       "missing": [
         "model_match",
         "powertrain_match"
@@ -13364,7 +13378,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:26b4c623-07be-4432-a640-2ebd477517cc": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 162999,
         "cash_price": null,
@@ -13505,7 +13519,7 @@
         "vin": "UMFELDBELEUCHTUNG",
         "year": null
       },
-      "misses": 7,
+      "misses": 8,
       "missing": [
         "model_match",
         "exterior_black",
@@ -13515,7 +13529,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:2bcfc9d4-1a79-4264-8f3b-ec7b77ebc0ff": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 92000,
         "cash_price": null,
@@ -13656,7 +13670,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 68,
+      "misses": 69,
       "missing": [
         "model_match"
       ],
@@ -13730,7 +13744,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 227,
+      "misses": 228,
       "missing": [
         "model_match",
         "interior_black"
@@ -13805,7 +13819,7 @@
         "vin": "SALZB2BS8TH012942",
         "year": null
       },
-      "misses": 72,
+      "misses": 73,
       "missing": [
         "model_match",
         "interior_black"
@@ -13880,7 +13894,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 218,
+      "misses": 219,
       "missing": [
         "model_match",
         "interior_black"
@@ -13955,7 +13969,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 150,
+      "misses": 151,
       "missing": [
         "model_match"
       ],
@@ -14029,7 +14043,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 62,
+      "misses": 63,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -14106,7 +14120,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 6,
+      "misses": 7,
       "missing": [
         "model_match"
       ],
@@ -14180,7 +14194,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 245,
+      "misses": 246,
       "missing": [
         "powertrain_match",
         "interior_black"
@@ -14255,7 +14269,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 76,
+      "misses": 77,
       "missing": [
         "model_match",
         "interior_black"
@@ -14330,7 +14344,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 148,
+      "misses": 149,
       "missing": [
         "model_match",
         "powertrain_match"
@@ -14405,7 +14419,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 37,
+      "misses": 38,
       "missing": [
         "powertrain_match",
         "exterior_black"
@@ -14480,7 +14494,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 245,
+      "misses": 246,
       "missing": [
         "powertrain_match",
         "exterior_black",
@@ -14556,7 +14570,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 133,
+      "misses": 134,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -14632,7 +14646,7 @@
         "vin": "UMFELDBELEUCHTUNG",
         "year": null
       },
-      "misses": 183,
+      "misses": 184,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -14641,7 +14655,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:52e4b14d-e09f-4758-aefb-0771bcf6fa39": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 162880,
         "cash_price": null,
@@ -14714,6 +14728,81 @@
       "removed": false,
       "status": "irrelevant"
     },
+    "range-rover-l460-d350-autobiography-2026:autoscout24:5649dcfc-a0e8-4437-991a-5cf04a537fd6": {
+      "last_seen_at": "2026-10-17T19:25:57Z",
+      "listing": {
+        "advertised_price": 51950,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "image_url": "https://prod.pictures.autoscout24.net/listing-images/5649dcfc-a0e8-4437-991a-5cf04a537fd6_e1b6775d-d8b7-4e27-8d92-00d2271489af.jpg/1920x1080.jpg",
+        "in_stock": {
+          "source_text": null,
+          "value": null
+        },
+        "interior_black": {
+          "source_text": "mirror",
+          "value": false
+        },
+        "is_new": {
+          "source_text": "used",
+          "value": false
+        },
+        "listing_id": "5649dcfc-a0e8-4437-991a-5cf04a537fd6",
+        "location": "RIDDERKERK",
+        "mileage_km": null,
+        "model_match": {
+          "source_text": "Range Rover Evoque",
+          "value": false
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": "EUR",
+        "price_qualifier": "unqualified",
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "unknown",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoscout24",
+        "source_market": "europe",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "range-rover-l460-d350-autobiography-2026",
+        "target_name": "Range Rover L460 D350 Autobiography 2026",
+        "title": "Land Rover for € 51,950",
+        "top_trim": {
+          "source_text": null,
+          "value": null
+        },
+        "url": "https://www.autoscout24.com/offers/land-rover-range-rover-evoque-1-5-p270e-phev-awd-dynamic-se-pano-schuifdak-black-electric-gasoline-black-cat_ma15641mo19600-5649dcfc-a0e8-4437-991a-5cf04a537fd6",
+        "vin": null,
+        "year": null
+      },
+      "misses": 0,
+      "missing": [
+        "model_match",
+        "interior_black"
+      ],
+      "removed": false,
+      "status": "irrelevant"
+    },
     "range-rover-l460-d350-autobiography-2026:autoscout24:57a82aa8-f902-4123-a61b-6761d6804225": {
       "last_seen_at": "2026-09-21T21:06:07Z",
       "listing": {
@@ -14781,7 +14870,7 @@
         "vin": "LADERAUMABDECKUNG",
         "year": null
       },
-      "misses": 121,
+      "misses": 122,
       "missing": [
         "model_match",
         "exterior_black",
@@ -14857,7 +14946,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 181,
+      "misses": 182,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -14933,7 +15022,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 2,
+      "misses": 3,
       "missing": [
         "model_match",
         "exterior_black",
@@ -15009,7 +15098,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 30,
+      "misses": 31,
       "missing": [
         "model_match",
         "interior_black"
@@ -15084,7 +15173,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 96,
+      "misses": 97,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -15160,7 +15249,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 3,
+      "misses": 4,
       "missing": [
         "model_match",
         "interior_black"
@@ -15169,7 +15258,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:6ed95e4a-05d6-43a3-92e8-aaeff7216c07": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 154900,
         "cash_price": null,
@@ -15309,7 +15398,7 @@
         "vin": "KUNSTLEDERLENKRAD",
         "year": null
       },
-      "misses": 227,
+      "misses": 228,
       "missing": [
         "model_match",
         "exterior_black",
@@ -15385,7 +15474,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 113,
+      "misses": 114,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -15396,7 +15485,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:75a44393-e18b-422b-a42f-87c253821925": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 183490,
         "cash_price": null,
@@ -15536,7 +15625,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 249,
+      "misses": 250,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -15612,7 +15701,7 @@
         "vin": "LADERAUMABDECKUNG",
         "year": null
       },
-      "misses": 234,
+      "misses": 235,
       "missing": [
         "model_match"
       ],
@@ -15686,7 +15775,7 @@
         "vin": "UMFELDBELEUCHTUNG",
         "year": null
       },
-      "misses": 111,
+      "misses": 112,
       "missing": [
         "model_match",
         "exterior_black",
@@ -15762,7 +15851,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 145,
+      "misses": 146,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -15837,7 +15926,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 67,
+      "misses": 68,
       "missing": [
         "model_match"
       ],
@@ -15911,9 +16000,84 @@
         "vin": null,
         "year": null
       },
-      "misses": 200,
+      "misses": 201,
       "missing": [
         "model_match",
+        "interior_black"
+      ],
+      "removed": false,
+      "status": "irrelevant"
+    },
+    "range-rover-l460-d350-autobiography-2026:autoscout24:8e2d7e10-d4a7-42a7-8b53-ccb8cbb1aa94": {
+      "last_seen_at": "2026-10-17T19:25:57Z",
+      "listing": {
+        "advertised_price": 179950,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": "Pack",
+          "value": false
+        },
+        "image_url": "https://prod.pictures.autoscout24.net/listing-images/8e2d7e10-d4a7-42a7-8b53-ccb8cbb1aa94_b0282837-5bcd-45c1-8bed-9adf57ae46e0.jpg/1920x1080.jpg",
+        "in_stock": {
+          "source_text": null,
+          "value": null
+        },
+        "interior_black": {
+          "source_text": "mirror",
+          "value": false
+        },
+        "is_new": {
+          "source_text": "used",
+          "value": false
+        },
+        "listing_id": "8e2d7e10-d4a7-42a7-8b53-ccb8cbb1aa94",
+        "location": "Remscheid",
+        "mileage_km": 60,
+        "model_match": {
+          "source_text": "Land Rover Range Rover",
+          "value": true
+        },
+        "powertrain_match": {
+          "source_text": null,
+          "value": null
+        },
+        "price_currency": "EUR",
+        "price_qualifier": "unqualified",
+        "rear_seat_entertainment": {
+          "source_text": "Multimediasystem im Fond",
+          "value": true
+        },
+        "region": "europe",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "autoscout24",
+        "source_market": "europe",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "range-rover-l460-d350-autobiography-2026",
+        "target_name": "Range Rover L460 D350 Autobiography 2026",
+        "title": "Land Rover for € 179,950",
+        "top_trim": {
+          "source_text": "Autobiography",
+          "value": true
+        },
+        "url": "https://www.autoscout24.com/offers/land-rover-range-rover-range-350d-atb-swb-st-heizung-luft-pro-vip-sea-diesel-black-cat_ma15641mo15793-8e2d7e10-d4a7-42a7-8b53-ccb8cbb1aa94",
+        "vin": "UMFELDBELEUCHTUNG",
+        "year": null
+      },
+      "misses": 0,
+      "missing": [
+        "exterior_black",
         "interior_black"
       ],
       "removed": false,
@@ -15986,7 +16150,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 233,
+      "misses": 234,
       "missing": [
         "model_match",
         "interior_black"
@@ -16061,7 +16225,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 41,
+      "misses": 42,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -16136,7 +16300,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 228,
+      "misses": 229,
       "missing": [
         "model_match",
         "interior_black"
@@ -16211,7 +16375,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 178,
+      "misses": 179,
       "missing": [
         "model_match",
         "exterior_black",
@@ -16287,7 +16451,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 207,
+      "misses": 208,
       "missing": [
         "model_match",
         "interior_black"
@@ -16362,7 +16526,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 25,
+      "misses": 26,
       "missing": [
         "model_match",
         "interior_black"
@@ -16371,7 +16535,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:a38f2de1-d1c1-44a3-9650-9ed6171e3554": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 186000,
         "cash_price": null,
@@ -16511,7 +16675,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 135,
+      "misses": 136,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -16587,7 +16751,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 247,
+      "misses": 248,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -16662,7 +16826,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 24,
+      "misses": 25,
       "missing": [
         "model_match",
         "interior_black"
@@ -16671,7 +16835,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:aae647ba-8029-413c-93cf-a83464292f9b": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 177000,
         "cash_price": null,
@@ -16745,7 +16909,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:abe9b311-88ea-44e5-b9b6-197ff0491460": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 52900,
         "cash_price": null,
@@ -16886,7 +17050,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 233,
+      "misses": 234,
       "missing": [
         "model_match"
       ],
@@ -16960,7 +17124,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 86,
+      "misses": 87,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -17036,7 +17200,7 @@
         "vin": "VERBRAUCHSANGABEN",
         "year": null
       },
-      "misses": 239,
+      "misses": 240,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -17112,7 +17276,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 35,
+      "misses": 36,
       "missing": [
         "model_match",
         "interior_black"
@@ -17187,7 +17351,7 @@
         "vin": "LADERAUMABDECKUNG",
         "year": null
       },
-      "misses": 137,
+      "misses": 138,
       "missing": [
         "interior_black"
       ],
@@ -17261,7 +17425,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 39,
+      "misses": 40,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -17337,7 +17501,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 1,
+      "misses": 2,
       "missing": [
         "interior_black"
       ],
@@ -17411,7 +17575,7 @@
         "vin": "VERBRAUCHSANGABEN",
         "year": null
       },
-      "misses": 194,
+      "misses": 195,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -17487,7 +17651,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 81,
+      "misses": 82,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -17563,7 +17727,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 84,
+      "misses": 85,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -17638,7 +17802,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 248,
+      "misses": 249,
       "missing": [
         "powertrain_match",
         "interior_black"
@@ -17647,7 +17811,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:cd135813-b591-4490-8d50-157a1fe82ee3": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 170348,
         "cash_price": null,
@@ -17787,7 +17951,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": 2027
       },
-      "misses": 0,
+      "misses": 1,
       "missing": [
         "model_match",
         "year",
@@ -17863,7 +18027,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 148,
+      "misses": 149,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -17939,7 +18103,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 260,
+      "misses": 261,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -18016,7 +18180,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 51,
+      "misses": 52,
       "missing": [
         "model_match",
         "exterior_black",
@@ -18026,7 +18190,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:d44be0a5-4b45-43f6-9c6a-460da430bc75": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 184450,
         "cash_price": null,
@@ -18167,7 +18331,7 @@
         "vin": "SCHRAUBENFEDERUNG",
         "year": null
       },
-      "misses": 77,
+      "misses": 78,
       "missing": [
         "model_match",
         "interior_black"
@@ -18176,7 +18340,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:dffe155f-c44e-4070-98d5-032b644c7d15": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 180990,
         "cash_price": null,
@@ -18316,7 +18480,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 11,
+      "misses": 12,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -18392,7 +18556,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 69,
+      "misses": 70,
       "missing": [
         "model_match"
       ],
@@ -18466,7 +18630,7 @@
         "vin": "FAHRWERKSREGELUNG",
         "year": null
       },
-      "misses": 245,
+      "misses": 246,
       "missing": [
         "model_match",
         "interior_black"
@@ -18541,7 +18705,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 159,
+      "misses": 160,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -18618,7 +18782,7 @@
         "vin": "SAL1A2B90TA658188",
         "year": null
       },
-      "misses": 158,
+      "misses": 159,
       "missing": [
         "model_match"
       ],
@@ -18692,7 +18856,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 143,
+      "misses": 144,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -18703,7 +18867,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:f03eb8ab-b8d7-4320-b581-129c49d5f523": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 186000,
         "cash_price": null,
@@ -18843,7 +19007,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 67,
+      "misses": 68,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -18918,7 +19082,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 233,
+      "misses": 234,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -18994,7 +19158,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 78,
+      "misses": 79,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -19069,7 +19233,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 233,
+      "misses": 234,
       "missing": [
         "model_match"
       ],
@@ -19143,7 +19307,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 249,
+      "misses": 250,
       "missing": [
         "year",
         "exterior_black",
@@ -19221,7 +19385,7 @@
         "vin": "LADERAUMABDECKUNG",
         "year": null
       },
-      "misses": 26,
+      "misses": 27,
       "missing": [
         "model_match"
       ],
@@ -19295,7 +19459,7 @@
         "vin": "UMFELDBELEUCHTUNG",
         "year": null
       },
-      "misses": 221,
+      "misses": 222,
       "missing": [
         "exterior_black",
         "interior_black"
@@ -19304,7 +19468,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:autoscout24:ff520741-acb2-44d3-b390-28248a838271": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 85790,
         "cash_price": null,
@@ -26123,7 +26287,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:273415207": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 27900000,
         "cash_price": null,
@@ -26275,7 +26439,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:275402335": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 24680000,
         "cash_price": null,
@@ -28615,7 +28779,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:388237308": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 23500000,
         "cash_price": null,
@@ -29977,7 +30141,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:458532707": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 26700000,
         "cash_price": null,
@@ -30034,7 +30198,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 26 700 000 руб",
+        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 26 700 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
@@ -30279,7 +30443,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:491515268": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 29355000,
         "cash_price": null,
@@ -30336,7 +30500,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 29 355 000 руб",
+        "title": "Продажа Land Rover Range Rover 2026, 29 355 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
@@ -30811,7 +30975,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:538166313": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 25500000,
         "cash_price": null,
@@ -31340,7 +31504,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:579709307": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 21890000,
         "cash_price": null,
@@ -31645,7 +31809,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:598492505": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 39500000,
         "cash_price": null,
@@ -31793,7 +31957,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:600466232": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 24825000,
         "cash_price": null,
@@ -31946,7 +32110,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:605867947": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 20990000,
         "cash_price": null,
@@ -31977,7 +32141,7 @@
         "location": "Москва",
         "mileage_km": 15,
         "model_match": {
-          "source_text": "Land Rover Range Rover",
+          "source_text": "Range Rover",
           "value": true
         },
         "powertrain_match": {
@@ -32003,7 +32167,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 20 990 000 руб",
+        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 20 990 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
@@ -32548,7 +32712,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:641198528": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 26500000,
         "cash_price": null,
@@ -32923,7 +33087,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:650718788": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 23990000,
         "cash_price": null,
@@ -34437,7 +34601,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:714412160": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 27900000,
         "cash_price": null,
@@ -34588,7 +34752,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:721520771": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 24390000,
         "cash_price": null,
@@ -34966,7 +35130,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:748861045": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 27000000,
         "cash_price": null,
@@ -35116,7 +35280,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:752689309": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 27000000,
         "cash_price": null,
@@ -35173,7 +35337,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 27 000 000 руб",
+        "title": "Продажа Land Rover Range Rover 2026, 27 000 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
@@ -35268,7 +35432,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:768699638": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 24490000,
         "cash_price": null,
@@ -36329,7 +36493,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:822041043": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 28500000,
         "cash_price": null,
@@ -36386,7 +36550,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 28 500 000 руб",
+        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 28 500 000 руб",
         "top_trim": {
           "source_text": null,
           "value": null
@@ -36408,7 +36572,7 @@
       "status": "candidate"
     },
     "range-rover-l460-d350-autobiography-2026:drom:824712244": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 26750000,
         "cash_price": null,
@@ -36465,7 +36629,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 26 750 000 руб",
+        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 26 750 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
@@ -37553,7 +37717,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:drom:947881524": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 24490000,
         "cash_price": null,
@@ -37610,7 +37774,7 @@
         },
         "target_id": "range-rover-l460-d350-autobiography-2026",
         "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 24 490 000 руб",
+        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 24 490 000 руб",
         "top_trim": {
           "source_text": "Autobiography",
           "value": true
@@ -37627,7 +37791,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:landrover_georgia:hse-alr60": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -37768,7 +37932,7 @@
         "vin": null,
         "year": 2025
       },
-      "misses": 35,
+      "misses": 36,
       "missing": [
         "model_match",
         "year",
@@ -37844,7 +38008,7 @@
         "vin": null,
         "year": 2025
       },
-      "misses": 112,
+      "misses": 113,
       "missing": [
         "model_match",
         "year",
@@ -37854,7 +38018,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:landrover_georgia:se-alr68": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": null,
         "cash_price": null,
@@ -37929,7 +38093,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6a043c4e42c78331cddcc11c": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 120800,
         "cash_price": null,
@@ -38007,7 +38171,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6a437b5eff199479299e94ee": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 103000,
         "cash_price": null,
@@ -38148,7 +38312,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 215,
+      "misses": 216,
       "missing": [
         "powertrain_match",
         "year",
@@ -38226,7 +38390,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 252,
+      "misses": 253,
       "missing": [
         "year",
         "exterior_black",
@@ -38236,7 +38400,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6a64702072876286fe0d68eb": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 95600,
         "cash_price": null,
@@ -38314,7 +38478,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6a647159907d7e7d45d290bb": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 95500,
         "cash_price": null,
@@ -38458,7 +38622,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 39,
+      "misses": 40,
       "missing": [
         "powertrain_match",
         "year",
@@ -38535,7 +38699,7 @@
         "vin": null,
         "year": 2017
       },
-      "misses": 3,
+      "misses": 4,
       "missing": [
         "year",
         "exterior_black",
@@ -38546,7 +38710,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6a8bb55744906112a6bd4586": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 68000,
         "cash_price": null,
@@ -38689,7 +38853,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 244,
+      "misses": 245,
       "missing": [
         "powertrain_match",
         "year",
@@ -38766,7 +38930,7 @@
         "vin": null,
         "year": 2014
       },
-      "misses": 248,
+      "misses": 249,
       "missing": [
         "year",
         "exterior_black",
@@ -38776,7 +38940,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6a94a5e7f0653297e9b586f9": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 80000,
         "cash_price": null,
@@ -38918,7 +39082,7 @@
         "vin": null,
         "year": 2025
       },
-      "misses": 235,
+      "misses": 236,
       "missing": [
         "powertrain_match",
         "year",
@@ -38995,7 +39159,7 @@
         "vin": "SALMF13488A281676",
         "year": 2008
       },
-      "misses": 88,
+      "misses": 89,
       "missing": [
         "year",
         "exterior_black",
@@ -39071,7 +39235,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 227,
+      "misses": 228,
       "missing": [
         "year",
         "exterior_black",
@@ -39147,7 +39311,7 @@
         "vin": null,
         "year": 2021
       },
-      "misses": 150,
+      "misses": 151,
       "missing": [
         "year",
         "exterior_black"
@@ -39222,7 +39386,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 196,
+      "misses": 197,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -39303,7 +39467,7 @@
         "vin": "SALGS2SV1KA541058",
         "year": 2019
       },
-      "misses": 167,
+      "misses": 168,
       "missing": [
         "year",
         "exterior_black",
@@ -39379,7 +39543,7 @@
         "vin": null,
         "year": 2019
       },
-      "misses": 179,
+      "misses": 180,
       "missing": [
         "year",
         "exterior_black",
@@ -39456,7 +39620,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 153,
+      "misses": 154,
       "missing": [
         "year",
         "exterior_black",
@@ -39533,7 +39697,7 @@
         "vin": null,
         "year": 2010
       },
-      "misses": 170,
+      "misses": 171,
       "missing": [
         "year",
         "exterior_black",
@@ -39609,7 +39773,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 184,
+      "misses": 185,
       "missing": [
         "powertrain_match",
         "year",
@@ -39686,7 +39850,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 61,
+      "misses": 62,
       "missing": [
         "powertrain_match",
         "year",
@@ -39763,7 +39927,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 156,
+      "misses": 157,
       "missing": [
         "powertrain_match",
         "year",
@@ -39841,7 +40005,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 151,
+      "misses": 152,
       "missing": [
         "year",
         "exterior_black",
@@ -39918,7 +40082,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 155,
+      "misses": 156,
       "missing": [
         "year",
         "exterior_black",
@@ -39994,7 +40158,7 @@
         "vin": null,
         "year": 2019
       },
-      "misses": 139,
+      "misses": 140,
       "missing": [
         "year",
         "exterior_black",
@@ -40071,7 +40235,7 @@
         "vin": null,
         "year": 2019
       },
-      "misses": 63,
+      "misses": 64,
       "missing": [
         "year",
         "exterior_black",
@@ -40147,7 +40311,7 @@
         "vin": null,
         "year": null
       },
-      "misses": 117,
+      "misses": 118,
       "missing": [
         "model_match",
         "powertrain_match",
@@ -40229,7 +40393,7 @@
         "vin": null,
         "year": 2006
       },
-      "misses": 87,
+      "misses": 88,
       "missing": [
         "year",
         "exterior_black",
@@ -40305,7 +40469,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 112,
+      "misses": 113,
       "missing": [
         "year",
         "exterior_black",
@@ -40381,7 +40545,7 @@
         "vin": null,
         "year": 2019
       },
-      "misses": 103,
+      "misses": 104,
       "missing": [
         "year",
         "exterior_black"
@@ -40456,7 +40620,7 @@
         "vin": null,
         "year": 2023
       },
-      "misses": 4,
+      "misses": 5,
       "missing": [
         "powertrain_match",
         "year",
@@ -40533,7 +40697,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 78,
+      "misses": 79,
       "missing": [
         "year",
         "exterior_black",
@@ -40544,7 +40708,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6ab8054ab0f627445e3d06cd": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 49000,
         "cash_price": null,
@@ -40686,7 +40850,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 6,
+      "misses": 7,
       "missing": [
         "year",
         "exterior_black",
@@ -40763,7 +40927,7 @@
         "vin": null,
         "year": 2017
       },
-      "misses": 40,
+      "misses": 41,
       "missing": [
         "year",
         "exterior_black",
@@ -40839,7 +41003,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 39,
+      "misses": 40,
       "missing": [
         "year",
         "exterior_black",
@@ -40915,7 +41079,7 @@
         "vin": null,
         "year": 2018
       },
-      "misses": 4,
+      "misses": 5,
       "missing": [
         "year",
         "exterior_black",
@@ -40925,7 +41089,7 @@
       "status": "irrelevant"
     },
     "range-rover-l460-d350-autobiography-2026:mashina:6ad31fee9df0af289face4ac": {
-      "last_seen_at": "2026-10-17T17:11:22Z",
+      "last_seen_at": "2026-10-17T19:25:57Z",
       "listing": {
         "advertised_price": 58000,
         "cash_price": null,
