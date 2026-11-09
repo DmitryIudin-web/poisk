@@ -12,6 +12,7 @@ from teramont_monitor.digest import build_price_digest
 from teramont_monitor.profiles import load_target_profile
 from teramont_monitor.storage import save_price_digest
 from teramont_monitor.telegram import (
+    PhotoRejected,
     TelegramError,
     format_events,
     format_price_digest,
@@ -214,7 +215,7 @@ class TelegramTests(unittest.TestCase):
             text_calls = []
 
             def reject_photo(_token: str, _chat: str, _photo: str, _caption: str) -> None:
-                raise TelegramError("photo rejected")
+                raise PhotoRejected("photo rejected")
 
             delivered = send_price_digest(
                 root,

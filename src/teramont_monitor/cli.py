@@ -15,6 +15,7 @@ from .profiles import load_target_profile
 from .sources import Fetcher, load_source_configs, scan_all
 from .storage import append_history, load_pending, load_state, save_pending, save_price_digest, save_state
 from .telegram import TelegramError, send_pending, send_price_digest
+from .telegram_api import check_access
 
 
 DEFAULT_TARGET = "config/targets/teramont-pro-2026.json"
@@ -128,6 +129,7 @@ def _parser() -> argparse.ArgumentParser:
     collect_command.add_argument("--state-dir", required=True)
     collect_command.add_argument("--target", default=DEFAULT_TARGET)
     collect_command.add_argument("--dry-run", action="store_true")
+    commands.add_parser("check-telegram", help="check bot and chat access without sending messages")
     notify_command = commands.add_parser("notify", help="deliver queued Telegram events")
     notify_command.add_argument("--state-dir", required=True)
     digest_command = commands.add_parser("digest", help="deliver the latest Russian lowest-price report")
@@ -150,12 +152,16 @@ def main(argv: list[str] | None = None, *, environ: Mapping[str, str] | None = N
         summary = smoke(args.config, target_path=args.target)
         print(json.dumps(asdict(summary), ensure_ascii=False, sort_keys=True))
         return summary.exit_code
-    token = environ.get("TELEGRAM_BOT_TOKEN", "")
-    chat_id = environ.get("TELEGRAM_CHAT_ID", "")
+    token = environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    chat_id = environ.get("TELEGRAM_CHAT_ID", "").strip()
     if not token or not chat_id:
         print("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required", file=sys.stderr)
         return 2
     try:
+        if args.command == "check-telegram":
+            check_access(token, chat_id)
+            print("Telegram bot and chat access check passed")
+            return 0
         delivered = (
             send_price_digest(args.state_dir, token, chat_id)
             if args.command == "digest"

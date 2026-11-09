@@ -107,6 +107,18 @@ jobs:
           echo "range_rover_notify_status=$range_rover_notify_status" >> "$GITHUB_OUTPUT"
           echo "teramont_digest_status=$teramont_digest_status" >> "$GITHUB_OUTPUT"
           echo "range_rover_digest_status=$range_rover_digest_status" >> "$GITHUB_OUTPUT"
+          {
+            echo '| Target | Collection (exit) | Events (exit) | Digest (exit) |'
+            echo '| --- | --- | --- | --- |'
+            teramont_collect='${{ steps.collect.outputs.teramont_status }}'
+            range_rover_collect='${{ steps.collect.outputs.range_rover_status }}'
+            teramont_digest_result=$teramont_digest_status
+            range_rover_digest_result=$range_rover_digest_status
+            if [ "$teramont_collect" != 0 ]; then teramont_digest_result=skipped; fi
+            if [ "$range_rover_collect" != 0 ]; then range_rover_digest_result=skipped; fi
+            echo "| Teramont | $teramont_collect | $teramont_notify_status | $teramont_digest_result |"
+            echo "| Range Rover | $range_rover_collect | $range_rover_notify_status | $range_rover_digest_result |"
+          } >> "$GITHUB_STEP_SUMMARY"
           if [ "$teramont_notify_status" != "0" ] || [ "$range_rover_notify_status" != "0" ]; then
             exit 1
           fi

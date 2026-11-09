@@ -51,6 +51,24 @@ def save_price_digest(path: str | Path, digest: PriceDigest) -> None:
     _write_json_atomic(Path(path), digest.to_dict())
 
 
+def load_digest_progress(path: Path, digest: PriceDigest, total: int) -> int:
+    if not path.exists():
+        return 0
+    record = _read_json(path, {})
+    if (record["target_id"], record["observed_at"]) != (digest.target_id, digest.observed_at):
+        return 0
+    count = record["acknowledged"]
+    if type(count) is not int or not 0 <= count <= total:
+        raise ValueError("invalid digest delivery count")
+    return count
+
+
+def save_digest_progress(path: Path, digest: PriceDigest, count: int) -> None:
+    _write_json_atomic(path, {
+        "target_id": digest.target_id, "observed_at": digest.observed_at, "acknowledged": count,
+    })
+
+
 def append_history(path: str | Path, records: Iterable[dict[str, Any]]) -> None:
     path = Path(path)
     rows = list(records)
