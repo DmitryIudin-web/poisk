@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - "src/universal_search/**"
-      - "tests/test_universal.py"
+      - "src/teramont_monitor/**"
+      - "tests/**"
+      - ".github/workflows/telegram-access.yml"
       - "pyproject.toml"
       - "Dockerfile"
       - "docker-compose.yml"
@@ -16,7 +18,9 @@ on:
       - main
     paths:
       - "src/universal_search/**"
-      - "tests/test_universal.py"
+      - "src/teramont_monitor/**"
+      - "tests/**"
+      - ".github/workflows/telegram-access.yml"
       - "pyproject.toml"
       - "Dockerfile"
       - "docker-compose.yml"

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import html
-import json
 from collections.abc import Callable, Iterable
 from pathlib import Path
-from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
 
 from .models import Event, PriceDigest, RankedOffer
-from .storage import load_pending, load_price_digest, load_state, save_pending, save_state
+from .storage import (
+    load_digest_progress, load_pending, load_price_digest, load_state,
+    save_digest_progress, save_pending, save_state,
+)
+from .telegram_api import PhotoRejected, TelegramError, send_message, send_photo
 
 
 ALLOWED_EVENT_KINDS = {
@@ -28,10 +29,6 @@ REGION_LABELS = {
     "europe": "Европа",
     "unknown": "Регион не подтверждён",
 }
-
-
-class TelegramError(RuntimeError):
-    pass
 
 
 Transport = Callable[[str, str, str], None]
@@ -211,38 +208,12 @@ def format_price_digest(digest: PriceDigest) -> str:
     return "\n\n".join(part for part in lines if part != "")
 
 
-def _telegram_transport(token: str, chat_id: str, text: str) -> None:
-    endpoint = f"https://api.telegram.org/bot{quote(token, safe=':')}/sendMessage"
-    body = urlencode({"chat_id": chat_id, "text": text, "parse_mode": "HTML", "disable_web_page_preview": "true"}).encode("utf-8")
-    request = Request(endpoint, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    try:
-        with urlopen(request, timeout=20) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except Exception as error:
-        raise TelegramError(f"Telegram delivery failed: {type(error).__name__}") from error
-    if not payload.get("ok"):
-        raise TelegramError("Telegram API rejected the message")
-
-
-def _telegram_photo_transport(token: str, chat_id: str, photo: str, caption: str) -> None:
-    endpoint = f"https://api.telegram.org/bot{quote(token, safe=':')}/sendPhoto"
-    body = urlencode({"chat_id": chat_id, "photo": photo, "caption": caption, "parse_mode": "HTML"}).encode("utf-8")
-    request = Request(endpoint, data=body, headers={"Content-Type": "application/x-www-form-urlencoded"})
-    try:
-        with urlopen(request, timeout=20) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except Exception as error:
-        raise TelegramError(f"Telegram photo delivery failed: {type(error).__name__}") from error
-    if not payload.get("ok"):
-        raise TelegramError("Telegram API rejected the photo")
-
-
 def send_pending(
     state_dir: str | Path,
     token: str,
     chat_id: str,
     *,
-    transport: Transport = _telegram_transport,
+    transport: Transport = send_message,
 ) -> int:
     if not token or not chat_id:
         raise TelegramError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required")
@@ -270,8 +241,8 @@ def send_price_digest(
     token: str,
     chat_id: str,
     *,
-    transport: Transport = _telegram_transport,
-    photo_transport: PhotoTransport = _telegram_photo_transport,
+    transport: Transport = send_message,
+    photo_transport: PhotoTransport = send_photo,
 ) -> int:
     if not token or not chat_id:
         raise TelegramError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required")
@@ -280,11 +251,20 @@ def send_price_digest(
     except (FileNotFoundError, KeyError, TypeError, ValueError) as error:
         raise TelegramError("Fresh price digest is unavailable") from error
     offers = (*digest.confirmed, *digest.candidates)
+    progress_path = Path(state_dir) / "digest-delivery.json"
+    total = len(offers) or 1
+    try:
+        acknowledged = load_digest_progress(progress_path, digest, total)
+    except (KeyError, TypeError, ValueError) as error:
+        raise TelegramError("Invalid digest delivery checkpoint") from error
+    if acknowledged == total:
+        return 0
     if not offers:
         transport(token, chat_id, format_price_digest(digest))
+        save_digest_progress(progress_path, digest, 1)
         return 1
     delivered = 0
-    for index, offer in enumerate(offers, 1):
+    for index, offer in enumerate(offers[acknowledged:], acknowledged + 1):
         card = "\n".join(
             (
                 f"<b>{html.escape(digest.target_name)}</b>",
@@ -295,9 +275,10 @@ def send_price_digest(
         if offer.listing.image_url:
             try:
                 photo_transport(token, chat_id, offer.listing.image_url, card)
-            except TelegramError:
+            except PhotoRejected:
                 transport(token, chat_id, card + "\nФото: доступно по ссылке на объявление")
         else:
             transport(token, chat_id, card)
+        save_digest_progress(progress_path, digest, index)
         delivered += 1
     return delivered

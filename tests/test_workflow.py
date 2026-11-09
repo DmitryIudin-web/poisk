@@ -104,6 +104,17 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("$STATE_DIR", text[text.index("Upload sanitized failure summaries"):])
         self.assertNotIn("raw-html", text)
 
+    def test_telegram_access_check_only_runs_manually_without_delivery_or_state(self) -> None:
+        workflow = (WORKFLOW.parent / "telegram-access.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("contents: read", workflow)
+        self.assertIn("persist-credentials: false", workflow)
+        self.assertEqual(re.findall(r"^        run: (.+)$", workflow, re.MULTILINE),
+                         ["python -m teramont_monitor check-telegram"])
+        for trigger in ("schedule:", "push:", "pull_request:", "workflow_run:"):
+            self.assertNotIn(trigger, workflow)
+        self.assertNotIn("monitor-state", workflow)
+
     def test_readme_documents_exact_setup_and_activation_boundary(self) -> None:
         text = README.read_text(encoding="utf-8")
         for phrase in (
