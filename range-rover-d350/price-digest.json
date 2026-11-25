@@ -76,82 +76,6 @@
     },
     {
       "listing": {
-        "advertised_price": 24260000,
-        "cash_price": null,
-        "commercial_recycling_fee_status": null,
-        "dcc": {
-          "source_text": null,
-          "value": null
-        },
-        "epts_status": null,
-        "exterior_black": {
-          "source_text": null,
-          "value": null
-        },
-        "image_url": "https://s.auto.drom.ru/photo/v2/qxyRFgNC2cvBctVaAeHRQirY7Ccw2gVi3OGt6LNAPSdGP4M4WJB4nMm-QkR9kXQSVcsGbj5YtduKmY4f/ttn.jpg",
-        "in_stock": {
-          "source_text": null,
-          "value": null
-        },
-        "interior_black": {
-          "source_text": null,
-          "value": null
-        },
-        "is_new": {
-          "source_text": "с пробегом",
-          "value": false
-        },
-        "listing_id": "112396208",
-        "location": "Москва",
-        "mileage_km": null,
-        "model_match": {
-          "source_text": "Land Rover Range Rover",
-          "value": true
-        },
-        "powertrain_match": {
-          "source_text": "D350",
-          "value": true
-        },
-        "price_currency": "RUB",
-        "price_qualifier": "unqualified",
-        "rear_seat_entertainment": {
-          "source_text": null,
-          "value": null
-        },
-        "region": "russia",
-        "sold": {
-          "source_text": null,
-          "value": null
-        },
-        "source": "drom",
-        "source_market": "russia",
-        "steering_left": {
-          "source_text": null,
-          "value": null
-        },
-        "target_id": "range-rover-l460-d350-autobiography-2026",
-        "target_name": "Range Rover L460 D350 Autobiography 2026",
-        "title": "Продажа Land Rover Range Rover 2026, 24 260 000 руб",
-        "top_trim": {
-          "source_text": "Autobiography",
-          "value": true
-        },
-        "url": "https://auto.drom.ru/moscow/land_rover/range_rover/112396208.html",
-        "vin": null,
-        "year": 2026
-      },
-      "missing": [
-        "rear_seat_entertainment",
-        "exterior_black",
-        "interior_black",
-        "mileage",
-        "in_stock",
-        "cash_price"
-      ],
-      "status": "candidate"
-    },
-    {
-      "listing": {
         "advertised_price": 24290000,
         "cash_price": null,
         "commercial_recycling_fee_status": null,
@@ -224,12 +148,87 @@
         "cash_price"
       ],
       "status": "candidate"
+    },
+    {
+      "listing": {
+        "advertised_price": 25190000,
+        "cash_price": null,
+        "commercial_recycling_fee_status": null,
+        "dcc": {
+          "source_text": null,
+          "value": null
+        },
+        "epts_status": null,
+        "exterior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "image_url": "https://s.auto.drom.ru/photo/v2/LL8FT1-KtAJWM6PCW0zgOE7lJ22VW4CprgKPRoQdZV7Cwc0Rr26Q9UGOr-AgbALOExz7ONOCzvPtPDqX/ttn.jpg",
+        "in_stock": {
+          "source_text": "В наличии",
+          "value": true
+        },
+        "interior_black": {
+          "source_text": null,
+          "value": null
+        },
+        "is_new": {
+          "source_text": "с пробегом",
+          "value": false
+        },
+        "listing_id": "770160927",
+        "location": "Москва",
+        "mileage_km": null,
+        "model_match": {
+          "source_text": "Range Rover",
+          "value": true
+        },
+        "powertrain_match": {
+          "source_text": "D350",
+          "value": true
+        },
+        "price_currency": "RUB",
+        "price_qualifier": "unqualified",
+        "rear_seat_entertainment": {
+          "source_text": null,
+          "value": null
+        },
+        "region": "russia",
+        "sold": {
+          "source_text": null,
+          "value": null
+        },
+        "source": "drom",
+        "source_market": "russia",
+        "steering_left": {
+          "source_text": null,
+          "value": null
+        },
+        "target_id": "range-rover-l460-d350-autobiography-2026",
+        "target_name": "Range Rover L460 D350 Autobiography 2026",
+        "title": "Продажа Ленд Ровер Рендж Ровер 2026, 25 190 000 руб",
+        "top_trim": {
+          "source_text": "Autobiography",
+          "value": true
+        },
+        "url": "https://auto.drom.ru/spb/land_rover/range_rover/770160927.html",
+        "vin": null,
+        "year": 2026
+      },
+      "missing": [
+        "rear_seat_entertainment",
+        "exterior_black",
+        "interior_black",
+        "mileage",
+        "cash_price"
+      ],
+      "status": "candidate"
     }
   ],
   "confirmed": [],
-  "failed_sources": 5,
-  "observed_at": "2026-11-25T02:29:13Z",
-  "successful_sources": 4,
+  "failed_sources": 4,
+  "observed_at": "2026-11-25T12:55:06Z",
+  "successful_sources": 5,
   "target_id": "range-rover-l460-d350-autobiography-2026",
   "target_name": "Range Rover L460 D350 Autobiography 2026",
   "version": 1
